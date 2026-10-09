@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>SolanaWatch — Bantay-Taniman</title>
+  <title>SolanaWatch</title>
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="SolanaWatch" />
   <meta name="theme-color" content="#166534" />
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- Google & Apple Fonts -->
+  <!-- Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
@@ -31,7 +31,7 @@
     /* Dark Mode (Default) */
     body.ios-dark {
       --bg-page: #09090b;
-      --bg-card: rgba(24, 24, 27, 0.85);
+      --bg-card: rgba(24, 24, 27, 0.88);
       --bg-card-solid: #18181b;
       --bg-subtle: rgba(255, 255, 255, 0.06);
       --border-card: rgba(255, 255, 255, 0.10);
@@ -39,14 +39,14 @@
       --text-primary: #ffffff;
       --text-secondary: #a1a1aa;
       --text-muted: #71717a;
-      --tab-bg: rgba(18, 18, 20, 0.92);
-      --header-bg: rgba(9, 9, 11, 0.90);
+      --tab-bg: rgba(18, 18, 20, 0.95);
+      --header-bg: rgba(9, 9, 11, 0.92);
     }
 
     /* Light Mode */
     body.ios-light {
       --bg-page: #f4f4f5;
-      --bg-card: rgba(255, 255, 255, 0.90);
+      --bg-card: rgba(255, 255, 255, 0.92);
       --bg-card-solid: #ffffff;
       --bg-subtle: rgba(0, 0, 0, 0.04);
       --border-card: rgba(0, 0, 0, 0.08);
@@ -54,8 +54,8 @@
       --text-primary: #09090b;
       --text-secondary: #52525b;
       --text-muted: #a1a1aa;
-      --tab-bg: rgba(255, 255, 255, 0.95);
-      --header-bg: rgba(244, 244, 245, 0.92);
+      --tab-bg: rgba(255, 255, 255, 0.96);
+      --header-bg: rgba(244, 244, 245, 0.94);
     }
 
     * {
@@ -76,7 +76,7 @@
       justify-content: center;
     }
 
-    /* App Container: 100% full screen on phone, clean centered view on desktop */
+    /* Edge-to-edge container: full-screen on mobile, centered max 520px on desktop */
     .app-viewport {
       width: 100%;
       max-width: 520px;
@@ -85,7 +85,6 @@
       flex-direction: column;
       position: relative;
       background-color: var(--bg-page);
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.25);
     }
 
     /* Header Bar */
@@ -104,19 +103,16 @@
     }
 
     .brand-group h1 {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
       letter-spacing: -0.4px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
     }
 
     .brand-group p {
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--text-secondary);
-      font-weight: 500;
-      margin-top: 1px;
+      font-weight: 600;
+      margin-top: 2px;
     }
 
     .header-actions {
@@ -125,49 +121,58 @@
       gap: 8px;
     }
 
-    .lang-btn {
+    /* Dedicated Segmented Language Switcher */
+    .lang-switch-box {
+      display: flex;
       background: var(--bg-subtle);
       border: 0.5px solid var(--border-card);
-      color: var(--text-primary);
-      font-size: 12px;
-      font-weight: 700;
-      padding: 6px 12px;
-      border-radius: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      transition: transform 0.15s;
-    }
-    .lang-btn:active {
-      transform: scale(0.96);
+      border-radius: 12px;
+      padding: 2px;
+      gap: 2px;
     }
 
-    .icon-btn {
+    .lang-opt {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .lang-opt.active {
+      background: var(--bg-card-solid);
+      color: var(--text-primary);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .theme-btn {
       background: var(--bg-subtle);
       border: 0.5px solid var(--border-card);
       color: var(--text-secondary);
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 10px;
       cursor: pointer;
-      font-size: 15px;
-      transition: transform 0.15s;
+      transition: all 0.15s ease;
     }
-    .icon-btn:active {
-      transform: scale(0.92);
+    .theme-btn:active {
+      transform: scale(0.96);
     }
 
     /* Content Area */
     .app-content {
       flex: 1;
-      padding: 16px 16px 100px;
+      padding: 16px 16px 88px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       overflow-y: auto;
     }
 
@@ -176,69 +181,74 @@
       display: none;
       flex-direction: column;
       gap: 14px;
-      animation: fadeIn 0.25s ease;
+      animation: fadeIn 0.2s ease;
     }
     .tab-page.active {
       display: flex;
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
+      from { opacity: 0; transform: translateY(3px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Giant Status Banner (Traffic Light) */
+    /* Traffic Light Status Banner (Zero Emojis) */
     .status-banner {
-      border-radius: 20px;
-      padding: 18px 16px;
+      border-radius: 18px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      transition: all 0.3s ease;
       cursor: pointer;
+      transition: all 0.25s ease;
     }
     .status-banner.danger-theme {
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.20), rgba(239, 68, 68, 0.08));
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(239, 68, 68, 0.06));
       border: 1.5px solid rgba(239, 68, 68, 0.45);
     }
     .status-banner.warning-theme {
-      background: linear-gradient(135deg, rgba(249, 115, 22, 0.20), rgba(249, 115, 22, 0.08));
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.18), rgba(249, 115, 22, 0.06));
       border: 1.5px solid rgba(249, 115, 22, 0.45);
     }
     .status-banner.safe-theme {
-      background: linear-gradient(135deg, rgba(34, 197, 94, 0.20), rgba(34, 197, 94, 0.08));
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.18), rgba(34, 197, 94, 0.06));
       border: 1.5px solid rgba(34, 197, 94, 0.45);
     }
 
-    .status-header {
+    .status-top {
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
     }
-    .status-icon-box {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      flex-shrink: 0;
-    }
-    .danger-theme .status-icon-box { background: var(--ios-red); color: #fff; }
-    .warning-theme .status-icon-box { background: var(--ios-orange); color: #fff; }
-    .safe-theme .status-icon-box { background: var(--ios-green); color: #fff; }
 
-    .status-titles h2 {
-      font-size: 17px;
+    .status-tag {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 7px;
+    }
+    .danger-theme .status-tag { background: var(--ios-red); color: #fff; }
+    .warning-theme .status-tag { background: var(--ios-orange); color: #fff; }
+    .safe-theme .status-tag { background: var(--ios-green); color: #fff; }
+
+    .status-hint {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .status-banner h2 {
+      font-size: 18px;
       font-weight: 800;
       letter-spacing: -0.3px;
       line-height: 1.2;
     }
-    .status-titles p {
+
+    .status-banner p {
       font-size: 13px;
       color: var(--text-secondary);
-      margin-top: 3px;
-      line-height: 1.35;
+      line-height: 1.4;
     }
 
     .status-pills {
@@ -253,17 +263,20 @@
       font-size: 11.5px;
       font-weight: 700;
       padding: 4px 10px;
-      border-radius: 10px;
+      border-radius: 9px;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
     }
+    .dot-red { color: var(--ios-red); }
+    .dot-orange { color: var(--ios-orange); }
+    .dot-green { color: var(--ios-green); }
 
     /* Section Cards */
     .app-card {
       background: var(--bg-card);
       border: 0.5px solid var(--border-card);
-      border-radius: 20px;
+      border-radius: 18px;
       padding: 16px;
       display: flex;
       flex-direction: column;
@@ -278,21 +291,18 @@
       justify-content: space-between;
     }
     .card-title {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 6px;
     }
 
-    /* What To Do Today (Action Items) */
+    /* Numbered Action Items (Zero Emojis) */
     .action-list {
       display: flex;
       flex-direction: column;
-      gap: 9px;
+      gap: 8px;
     }
     .action-item {
       display: flex;
@@ -300,27 +310,37 @@
       gap: 12px;
       background: var(--bg-subtle);
       border: 0.5px solid var(--border-subtle);
-      border-radius: 14px;
+      border-radius: 13px;
       padding: 12px 14px;
     }
-    .action-icon {
-      font-size: 22px;
+    .action-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--bg-card-solid);
+      border: 1px solid var(--border-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-primary);
       flex-shrink: 0;
-      margin-top: 2px;
+      margin-top: 1px;
     }
     .action-text h4 {
-      font-size: 14.5px;
+      font-size: 14px;
       font-weight: 700;
       line-height: 1.25;
       margin-bottom: 2px;
     }
     .action-text p {
-      font-size: 12.5px;
+      font-size: 12px;
       color: var(--text-secondary);
       line-height: 1.35;
     }
 
-    /* 2x2 Metric Grid */
+    /* 2x2 Clean Sensor Grid */
     .metric-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -329,12 +349,12 @@
     .metric-tile {
       background: var(--bg-card);
       border: 0.5px solid var(--border-card);
-      border-radius: 18px;
+      border-radius: 16px;
       padding: 14px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 110px;
+      min-height: 105px;
       cursor: pointer;
       transition: transform 0.15s;
     }
@@ -347,18 +367,15 @@
       justify-content: space-between;
     }
     .tile-name {
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 4px;
     }
     .tile-badge {
       font-size: 10.5px;
       font-weight: 800;
       padding: 2px 7px;
-      border-radius: 7px;
+      border-radius: 6px;
       text-transform: uppercase;
     }
     .badge-danger { background: rgba(239, 68, 68, 0.20); color: var(--ios-red); }
@@ -366,13 +383,13 @@
     .badge-safe { background: rgba(34, 197, 94, 0.20); color: var(--ios-green); }
 
     .tile-value {
-      font-size: 26px;
+      font-size: 25px;
       font-weight: 800;
       letter-spacing: -0.5px;
       margin: 6px 0 2px;
     }
     .tile-value span {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 600;
       color: var(--text-secondary);
     }
@@ -380,20 +397,17 @@
       font-size: 11.5px;
       color: var(--text-secondary);
       font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 4px;
     }
 
-    /* Rain Card */
+    /* Weather Forecast Card */
     .forecast-card {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0.04));
-      border: 1px solid rgba(59, 130, 246, 0.25);
-      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0.03));
+      border: 1px solid rgba(59, 130, 246, 0.22);
+      border-radius: 16px;
       padding: 14px 16px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
     .forecast-top {
       display: flex;
@@ -401,31 +415,23 @@
       justify-content: space-between;
     }
     .forecast-pct {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 800;
       color: var(--ios-blue);
     }
     .forecast-tip {
-      font-size: 13px;
+      font-size: 12.5px;
       color: var(--text-primary);
       line-height: 1.35;
       font-weight: 600;
     }
 
-    /* Device Status Card */
+    /* Field Device Card */
     .device-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 4px 0;
-    }
-    .device-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .device-left .icon {
-      font-size: 22px;
+      padding: 2px 0;
     }
     .device-info h4 {
       font-size: 14px;
@@ -444,11 +450,11 @@
       color: var(--ios-green);
     }
     .device-node-pill {
-      font-size: 10.5px;
+      font-size: 11px;
       font-weight: 800;
       color: var(--text-secondary);
       background: var(--bg-subtle);
-      padding: 2px 8px;
+      padding: 3px 8px;
       border-radius: 6px;
     }
 
@@ -486,7 +492,7 @@
       color: var(--text-primary);
     }
 
-    /* Bottom Tab Navigation Bar */
+    /* Bottom Navigation Bar (Zero Icons, Pure Legible Text) */
     .tab-bar {
       position: fixed;
       bottom: 0;
@@ -494,7 +500,7 @@
       transform: translateX(-50%);
       width: 100%;
       max-width: 520px;
-      height: 72px;
+      height: 60px;
       background: var(--tab-bg);
       backdrop-filter: blur(25px);
       -webkit-backdrop-filter: blur(25px);
@@ -502,39 +508,37 @@
       display: flex;
       align-items: center;
       justify-content: space-around;
-      padding-bottom: max(6px, env(safe-area-inset-bottom));
+      padding: 6px 12px max(6px, env(safe-area-inset-bottom));
       z-index: 200;
+      gap: 8px;
     }
     .tab-btn {
       flex: 1;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 3px;
-      color: var(--text-muted);
+      justify-content: center;
+      height: 40px;
+      border-radius: 12px;
+      color: var(--text-secondary);
       cursor: pointer;
       border: none;
       background: transparent;
       font-family: inherit;
-      padding: 8px 0;
-      transition: color 0.15s;
+      font-size: 13px;
+      font-weight: 700;
+      transition: all 0.15s ease;
     }
     .tab-btn.active {
+      background: var(--bg-subtle);
       color: var(--ios-green);
-    }
-    .tab-btn .tab-icon {
-      font-size: 20px;
-    }
-    .tab-btn .tab-name {
-      font-size: 11px;
-      font-weight: 700;
+      border: 0.5px solid var(--border-card);
     }
 
     /* Modal Sheet */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(6px);
       display: none;
       align-items: flex-end;
@@ -548,26 +552,26 @@
       width: 100%;
       max-width: 520px;
       background: var(--bg-card-solid);
-      border-radius: 24px 24px 0 0;
+      border-radius: 22px 22px 0 0;
       padding: 20px 20px max(24px, env(safe-area-inset-bottom));
       display: flex;
       flex-direction: column;
       gap: 14px;
       max-height: 80vh;
       overflow-y: auto;
-      animation: slideUp 0.25s ease;
+      animation: slideUp 0.22s ease;
     }
     @keyframes slideUp {
       from { transform: translateY(100%); }
       to { transform: translateY(0); }
     }
     .modal-handle {
-      width: 40px;
+      width: 38px;
       height: 4px;
       background: var(--border-card);
       border-radius: 2px;
       align-self: center;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .modal-head {
       display: flex;
@@ -575,22 +579,22 @@
       justify-content: space-between;
     }
     .modal-head h3 {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 800;
     }
     .modal-close {
       border: none;
       background: var(--bg-subtle);
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
+      padding: 5px 12px;
+      border-radius: 10px;
       color: var(--text-secondary);
-      font-size: 14px;
-      font-weight: 800;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
       cursor: pointer;
     }
     .modal-body {
-      font-size: 14px;
+      font-size: 13.5px;
       color: var(--text-secondary);
       line-height: 1.5;
     }
@@ -603,18 +607,17 @@
     <!-- Top Header -->
     <header class="app-header">
       <div class="brand-group">
-        <h1 id="appHeaderTitle">🌱 SolanaWatch</h1>
-        <p id="appHeaderSub">Bantay-Taniman • Brgy. San Jose</p>
+        <h1 id="appHeaderTitle">SolanaWatch</h1>
+        <p id="appHeaderSub">Bantay-Kalusugan ng Pananim • Brgy. San Jose</p>
       </div>
       <div class="header-actions">
-        <!-- 1-Tap Bilingual Toggle -->
-        <button class="lang-btn" id="langToggleBtn" onclick="toggleLanguage()">
-          <span id="langBtnText">🇵🇭 Tagalog</span>
-        </button>
+        <!-- 2-Option Language Switcher (Zero Emojis) -->
+        <div class="lang-switch-box">
+          <button id="btnLangTL" class="lang-opt active" onclick="setLanguage('tl')">Tagalog</button>
+          <button id="btnLangEN" class="lang-opt" onclick="setLanguage('en')">English</button>
+        </div>
         <!-- Theme Toggle -->
-        <button class="icon-btn" onclick="toggleTheme()" title="Theme">
-          <span>🌓</span>
-        </button>
+        <button class="theme-btn" id="btnTheme" onclick="toggleTheme()">Tema</button>
       </div>
     </header>
 
@@ -622,85 +625,84 @@
     <main class="app-content">
 
       <!-- ====================================================================
-           TAB 1: 🏠 TANIMAN (FARM DASHBOARD)
+           TAB 1: TANIMAN / FARM DASHBOARD
            ==================================================================== -->
       <section class="tab-page active" id="tab-farm">
 
-        <!-- Traffic Light Status Banner -->
+        <!-- Traffic Light Status Banner (Zero Emojis) -->
         <div class="status-banner danger-theme" id="heroAlertCard" onclick="openModal('disease')">
-          <div class="status-header">
-            <div class="status-icon-box" id="heroAlertIcon">🚨</div>
-            <div class="status-titles">
-              <h2 id="heroAlertTitle">PANGANIB SA SAKIT!</h2>
-              <p id="heroAlertDesc">Napakabasa ng dahon at lupa. Mabilis kumalat ang amag at lanta. Kumilos agad ngayon!</p>
-            </div>
+          <div class="status-top">
+            <span class="status-tag" id="heroAlertTag">PANGANIB</span>
+            <span class="status-hint" id="heroAlertHint">Pindutin para sa gabay</span>
           </div>
+          <h2 id="heroAlertTitle">PANGANIB SA SAKIT</h2>
+          <p id="heroAlertDesc">Masyadong basa ang dahon at lupa. Mabilis kumalat ang amag at lanta. Kumilos agad ngayon.</p>
           <div class="status-pills">
             <div class="status-pill">
-              <span style="color: var(--ios-red);">●</span>
-              <span id="pillLateBlight">Amag (Late Blight): MATAAS</span>
+              <span class="dot-red">●</span>
+              <span id="pillLateBlight">Amag sa Dahon: Mataas</span>
             </div>
             <div class="status-pill">
-              <span style="color: var(--ios-orange);">●</span>
-              <span id="pillBacterialWilt">Bacterial Wilt: MATAAS</span>
+              <span class="dot-orange">●</span>
+              <span id="pillBacterialWilt">Lanta ng Halaman: Mataas</span>
             </div>
           </div>
         </div>
 
-        <!-- What To Do Today (Action Plan) -->
+        <!-- What To Do Today (Numbered Action List, Zero Emojis) -->
         <div class="app-card">
           <div class="card-title-row">
-            <span class="card-title" id="actionTitle">📋 DAPAT GAWIN NGAYON</span>
+            <span class="card-title" id="actionTitle">MGA DAPAT GAWIN NGAYON</span>
           </div>
 
           <div class="action-list">
             <div class="action-item">
-              <span class="action-icon" id="advIcon1">✂️</span>
+              <div class="action-num">1</div>
               <div class="action-text">
                 <h4 id="advTitle1">Tabasan ang Dahon sa Ilalim</h4>
-                <p id="advDesc1">Alisin ang mga lumang dahon na malapit sa lupa para mahanginan at matuyo agad.</p>
+                <p id="advDesc1">Alisin ang mga dahon na malapit sa lupa upang mahanginan at matuyo agad.</p>
               </div>
             </div>
 
             <div class="action-item">
-              <span class="action-icon" id="advIcon2">🚫</span>
+              <div class="action-num">2</div>
               <div class="action-text">
                 <h4 id="advTitle2">Huwag Magdilig Ngayon</h4>
-                <p id="advDesc2">Babad na sa tubig ang lupa. Huwag nang dagdagan para hindi mabulok ang ugat.</p>
+                <p id="advDesc2">Babad na sa tubig ang lupa. Huwag nang dagdagan upang maiwasan ang pagkabulok ng ugat.</p>
               </div>
             </div>
 
             <div class="action-item">
-              <span class="action-icon" id="advIcon3">💊</span>
+              <div class="action-num">3</div>
               <div class="action-text">
                 <h4 id="advTitle3">Mag-spray ng Gamot sa Amag</h4>
-                <p id="advDesc3">Mag-spray ng pampigil sa amag (tulad ng Copper) bago pumatak ang ulan.</p>
+                <p id="advDesc3">Mag-spray ng pampigil sa amag (tulad ng Copper) bago pumatak ang ulan bukas.</p>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 4 Clean Sensor Metric Tiles -->
+        <!-- 4 Clean Sensor Metric Tiles (Zero Emojis) -->
         <div class="card-title-row" style="margin-top: 2px;">
-          <span class="card-title" id="metricsTitle">🌱 KONDISYON NG TANIMAN</span>
+          <span class="card-title" id="metricsTitle">KONDISYON NG TANIMAN</span>
         </div>
 
         <div class="metric-grid">
           <!-- Tile 1: Leaf Wetness -->
           <div class="metric-tile" onclick="openModal('leaf')">
             <div class="tile-top">
-              <span class="tile-name" id="nameLWD">🍃 Dahon</span>
+              <span class="tile-name" id="nameLWD">Basa ng Dahon</span>
               <span class="tile-badge badge-danger" id="tileBadgeLWD">Basa</span>
             </div>
             <div class="tile-value" id="tileValLWD">11.8 <span id="unitHours">oras</span></div>
-            <div class="tile-sub" id="tileNoteLWD">🔴 Napakabasa</div>
+            <div class="tile-sub" id="tileNoteLWD">Napakabasa</div>
           </div>
 
           <!-- Tile 2: Air Temperature -->
           <div class="metric-tile" onclick="openModal('ambient')">
             <div class="tile-top">
-              <span class="tile-name" id="nameAir">🌡️ Temperatura</span>
-              <span class="tile-badge badge-danger" id="tileBadgeAir">94% RH</span>
+              <span class="tile-name" id="nameAir">Temperatura ng Hangin</span>
+              <span class="tile-badge badge-danger" id="tileBadgeAir">94% Alinsangan</span>
             </div>
             <div class="tile-value" id="tileValAir">21.4<span>°C</span></div>
             <div class="tile-sub" id="tileNoteAir">Malamig ang hangin</div>
@@ -709,7 +711,7 @@
           <!-- Tile 3: Soil Moisture -->
           <div class="metric-tile" onclick="openModal('soil_moisture')">
             <div class="tile-top">
-              <span class="tile-name" id="nameSoilM">🌱 Tubig sa Lupa</span>
+              <span class="tile-name" id="nameSoilM">Tubig sa Lupa</span>
               <span class="tile-badge badge-warning" id="tileBadgeSoilM">Babad</span>
             </div>
             <div class="tile-value" id="tileValSoilM">78.4<span>%</span></div>
@@ -719,7 +721,7 @@
           <!-- Tile 4: Soil Temperature -->
           <div class="metric-tile" onclick="openModal('soil_temp')">
             <div class="tile-top">
-              <span class="tile-name" id="nameSoilT">☀️ Init ng Lupa</span>
+              <span class="tile-name" id="nameSoilT">Temperatura ng Lupa</span>
               <span class="tile-badge badge-warning" id="tileBadgeSoilT">Normal</span>
             </div>
             <div class="tile-value" id="tileValSoilT">29.8<span>°C</span></div>
@@ -730,31 +732,28 @@
         <!-- 48-Hour Rain Forecast Card -->
         <div class="forecast-card">
           <div class="forecast-top">
-            <span class="card-title" id="weatherTitle" style="color: var(--ios-blue);">🌦️ ULAT NG PANAHON</span>
-            <span class="forecast-pct" id="mRainProb">85% Ulan</span>
+            <span class="card-title" id="weatherTitle" style="color: var(--ios-blue);">ULAT NG PANAHON</span>
+            <span class="forecast-pct" id="mRainProb">85% Pag-asa ng Ulan</span>
           </div>
           <p class="forecast-tip" id="mForecastText">
-            Inaasahan ang ulan sa susunod na 48 oras. Mag-spray ng pamprotekta bago pumatak ang ulan bukas!
+            Inaasahan ang ulan sa susunod na 48 oras. Mag-spray ng pamprotektang gamot bago pumatak ang ulan bukas.
           </p>
         </div>
 
-        <!-- Simple Device Status Card -->
+        <!-- Field Device Status Card (Zero Emojis) -->
         <div class="app-card">
           <div class="card-title-row">
-            <span class="card-title" id="deviceTitle">🔋 KAGAMITAN SA BUKID</span>
-            <span class="device-node-pill" id="nodeStatusBadge" style="color: var(--ios-green);">● Online</span>
+            <span class="card-title" id="deviceTitle">KAGAMITAN SA BUKID</span>
+            <span class="device-node-pill" id="nodeStatusBadge" style="color: var(--ios-green);">● Aktibo</span>
           </div>
           <div class="device-row">
-            <div class="device-left">
-              <span class="icon">🔋</span>
-              <div class="device-info">
-                <h4 id="mDeviceBattTitle">94% Baterya</h4>
-                <p id="mDeviceBattSub">Tumatagal pa ng ~44 na araw</p>
-              </div>
+            <div class="device-info">
+              <h4 id="mDeviceBattTitle">94% Baterya</h4>
+              <p id="mDeviceBattSub">Tumatagal pa ng ~44 na araw</p>
             </div>
             <div class="device-right">
-              <div class="device-solar" id="mDeviceSolarStatus">☀️ +18.4W Solar</div>
-              <div style="font-size: 11px; color: var(--text-secondary);" id="mDeviceSolarSub">Nagcha-charge</div>
+              <div class="device-solar" id="mDeviceSolarStatus">+18.4W Solar</div>
+              <div style="font-size: 11px; color: var(--text-secondary);" id="mDeviceSolarSub">Nagkakarga</div>
             </div>
           </div>
         </div>
@@ -762,19 +761,19 @@
       </section>
 
       <!-- ====================================================================
-           TAB 2: 📈 KASAYSAYAN (24-HOUR / 7-DAY HISTORY)
+           TAB 2: KASAYSAYAN / HISTORY
            ==================================================================== -->
       <section class="tab-page" id="tab-history">
         <div class="app-card">
           <div class="card-title-row">
             <div>
-              <span class="card-title" id="historyTitle">📈 KASAYSAYAN NG PANAHON</span>
-              <h3 style="font-size: 16px; font-weight: 800; margin-top: 2px;" id="chartHeaderMetric">Basa ng Dahon (Huling 24 Oras)</h3>
+              <span class="card-title" id="historyTitle">KASAYSAYAN NG PANAHON</span>
+              <h3 style="font-size: 15px; font-weight: 800; margin-top: 2px;" id="chartHeaderMetric">Basa ng Dahon (Huling 24 Oras)</h3>
             </div>
             <div class="time-pills">
-              <button class="time-btn" onclick="updateChartTime('6H', this)">6H</button>
-              <button class="time-btn active" onclick="updateChartTime('24H', this)">24H</button>
-              <button class="time-btn" onclick="updateChartTime('7D', this)">7D</button>
+              <button class="time-btn" id="btnTime6H" onclick="updateChartTime('6H', this)">6H</button>
+              <button class="time-btn active" id="btnTime24H" onclick="updateChartTime('24H', this)">24H</button>
+              <button class="time-btn" id="btnTime7D" onclick="updateChartTime('7D', this)">7D</button>
             </div>
           </div>
 
@@ -783,90 +782,87 @@
           </div>
 
           <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-secondary); border-top: 0.5px solid var(--border-subtle); padding-top: 8px;">
-            <span>● Panganib: &ge;10 oras</span>
-            <span>Pinakamataas: 11.8 oras</span>
-            <span style="color: var(--ios-green);">● Nakakonekta</span>
+            <span id="chartFootRisk">● Panganib: ≥10 oras</span>
+            <span id="chartFootPeak">Tuktok: 11.8 oras</span>
+            <span id="chartFootStatus" style="color: var(--ios-green);">● Nakakonekta</span>
           </div>
         </div>
 
         <div class="app-card">
-          <span class="card-title" id="historyNoteTitle">💡 PAALALA SA MAGSASAKA</span>
+          <span class="card-title" id="historyNoteTitle">PAALALA SA MAGSASAKA</span>
           <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.45;" id="historyNoteBody">
-            Kapag tumataas ang pulang linya sa higit 10 oras, mabilis sumibol ang amag (Late Blight) sa mga dahon ng kamatis at patatas. Mag-spray bago umabot sa 10 oras.
+            Kapag lumampas sa 10 oras ang tuloy-tuloy na basa ng dahon, mabilis sumibol ang amag (Late Blight) sa mga dahon ng kamatis at patatas. Mag-spray bago umabot sa 10 oras.
           </p>
         </div>
       </section>
 
       <!-- ====================================================================
-           TAB 3: ⚙️ KAGAMITAN (SETTINGS & DEVICE HEALTH)
+           TAB 3: KAGAMITAN / DEVICE HEALTH & SETTINGS
            ==================================================================== -->
       <section class="tab-page" id="tab-device">
         <div class="app-card">
-          <span class="card-title" id="nodeDetailsTitle">📡 KONEKSYON NG KAGAMITAN</span>
+          <span class="card-title" id="nodeDetailsTitle">KONEKSYON NG KAGAMITAN</span>
           
           <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13.5px;">
             <div style="display: flex; justify-content: space-between;">
-              <span style="color: var(--text-secondary);" id="lblDeviceName">Pangalan:</span>
+              <span style="color: var(--text-secondary);" id="lblDeviceName">Pangalan ng Kagamitan:</span>
               <strong>ESP32 Node 01</strong>
             </div>
             <div style="display: flex; justify-content: space-between;">
-              <span style="color: var(--text-secondary);" id="lblTargetCrop">Tanim:</span>
+              <span style="color: var(--text-secondary);" id="lblTargetCrop">Pananim:</span>
               <strong id="valCropTarget">Kamatis / Patatas / Talong</strong>
             </div>
             <div style="display: flex; justify-content: space-between;">
               <span style="color: var(--text-secondary);" id="lblWifiNet">Wi-Fi:</span>
-              <strong style="color: var(--ios-green);">Loading... (Connected)</strong>
+              <strong style="color: var(--ios-green);" id="valWifiNet">Loading... (Nakakonekta)</strong>
             </div>
             <div style="display: flex; justify-content: space-between;">
-              <span style="color: var(--text-secondary);">Vercel Cloud:</span>
+              <span style="color: var(--text-secondary);" id="lblCloudNet">Koneksyon sa Cloud:</span>
               <strong style="color: var(--ios-blue);">solanawatch-roan.vercel.app</strong>
             </div>
           </div>
 
-          <button onclick="window.SolanaHardware.openModal()" style="margin-top: 6px; padding: 10px; border-radius: 12px; background: var(--bg-subtle); border: 0.5px solid var(--border-card); color: var(--text-primary); font-weight: 700; cursor: pointer; font-size: 13px;">
-            ⚙️ Baguhin ang Settings ng Hardware
+          <button id="btnHwSettings" onclick="window.SolanaHardware.openModal()" style="margin-top: 6px; padding: 10px; border-radius: 12px; background: var(--bg-subtle); border: 0.5px solid var(--border-card); color: var(--text-primary); font-family: inherit; font-weight: 700; cursor: pointer; font-size: 13px;">
+            Baguhin ang Ayos ng Kagamitan
           </button>
         </div>
 
-        <!-- Link to PC Version for Examiners / Panel -->
+        <!-- Research Link for Examiners / Faculty -->
         <div class="app-card">
-          <span class="card-title">🖥️ PARA SA PANEL AT RESEARCHERS</span>
-          <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.4;">
-            Nais mo bang makita ang kumpletong pananaliksik, mga mathematical formula, at sensor diagrams?
+          <span class="card-title" id="researchTitle">PANANALIKSIK AT DOKUMENTASYON</span>
+          <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.4;" id="researchDesc">
+            Para sa kumpletong pagsusuri, mga pormula sa matematika, at ulat ng pananaliksik:
           </p>
-          <a href="desktop.html" style="text-align: center; text-decoration: none; padding: 10px; border-radius: 12px; background: var(--ios-blue); color: #fff; font-weight: 700; font-size: 13px;">
-            Buksan ang PC / Research Dashboard
+          <a href="desktop.html" id="researchBtn" style="text-align: center; text-decoration: none; padding: 10px; border-radius: 12px; background: var(--ios-blue); color: #fff; font-weight: 700; font-size: 13px;">
+            Buksan ang Talaan ng Pananaliksik
           </a>
         </div>
       </section>
 
     </main>
 
-    <!-- Bottom Navigation Bar (3 Clean Tabs) -->
+    <!-- Bottom Navigation Bar (Zero Icons, Pure High-Contrast Text Tabs) -->
     <nav class="tab-bar">
-      <button class="tab-btn active" onclick="switchFarmerTab('farm', this)">
-        <span class="tab-icon">🏠</span>
-        <span class="tab-name" id="tabNameFarm">Taniman</span>
+      <button class="tab-btn active" id="tabBtnFarm" onclick="switchFarmerTab('farm', this)">
+        Taniman
       </button>
 
-      <button class="tab-btn" onclick="switchFarmerTab('history', this)">
-        <span class="tab-icon">📈</span>
-        <span class="tab-name" id="tabNameHistory">Kasaysayan</span>
+      <button class="tab-btn" id="tabBtnHistory" onclick="switchFarmerTab('history', this)">
+        Kasaysayan
       </button>
 
-      <button class="tab-btn" onclick="switchFarmerTab('device', this)">
-        <span class="tab-icon">⚙️</span>
-        <span class="tab-name" id="tabNameDevice">Kagamitan</span>
+      <button class="tab-btn" id="tabBtnDevice" onclick="switchFarmerTab('device', this)">
+        Kagamitan
       </button>
     </nav>
 
-    <!-- Bottom Sheet Modal (Simple Farmer Explanations) -->
+    <!-- Bottom Sheet Modal (Zero Emojis) -->
     <div class="modal-backdrop" id="modalBackdrop" onclick="closeModal(event)">
       <div class="modal-sheet" onclick="event.stopPropagation()">
         <div class="modal-handle"></div>
         <div class="modal-head">
           <h3 id="modalTitle">Gabay sa Taniman</h3>
-          <button class="modal-close" onclick="closeModalDirect()">✕</button>
+          <button class="modal-close" id="modalCloseBtn" onclick="closeModalDirect()">Isara</button>
         </div>
         <div class="modal-body" id="modalBody">
           <!-- Dynamically populated -->
@@ -878,59 +874,90 @@
 
   <script>
     // =========================================================================
-    // FARMER-FRIENDLY BILINGUAL DICTIONARY
+    // 100% PURE BILINGUAL DICTIONARY (ZERO EMOJIS, ZERO ICONS)
     // =========================================================================
     let currentLang = localStorage.getItem('farmer_lang') || 'tl';
 
     const farmerDict = {
       tl: {
-        langBtn: "🇵🇭 Tagalog",
-        headerSub: "Bantay-Taniman • Brgy. San Jose",
+        appHeaderSub: "Bantay-Kalusugan ng Pananim • Brgy. San Jose",
+        themeBtn: "Tema",
         tabFarm: "Taniman",
         tabHistory: "Kasaysayan",
         tabDevice: "Kagamitan",
-        secAction: "📋 DAPAT GAWIN NGAYON",
-        secMetrics: "🌱 KONDISYON NG TANIMAN",
-        secWeather: "🌦️ ULAT NG PANAHON",
-        secDevice: "🔋 KAGAMITAN SA BUKID",
+        modalClose: "Isara",
+
+        secAction: "MGA DAPAT GAWIN NGAYON",
+        secMetrics: "KONDISYON NG TANIMAN",
+        secWeather: "ULAT NG PANAHON",
+        secDevice: "KAGAMITAN SA BUKID",
+
         unitHours: "oras",
         unitDays: "araw",
-        lblLeaves: "🍃 Dahon",
-        lblAir: "🌡️ Temperatura",
-        lblSoilM: "🌱 Tubig sa Lupa",
-        lblSoilT: "☀️ Init ng Lupa",
-        historyTitle: "📈 KASAYSAYAN NG PANAHON",
+        lblLeaves: "Basa ng Dahon",
+        lblAir: "Temperatura ng Hangin",
+        lblSoilM: "Tubig sa Lupa",
+        lblSoilT: "Temperatura ng Lupa",
+
+        historyTitle: "KASAYSAYAN NG PANAHON",
         chartTitle: "Basa ng Dahon (Huling 24 Oras)",
-        historyNoteTitle: "💡 PAALALA SA MAGSASAKA",
-        historyNoteBody: "Kapag tumataas ang pulang linya sa higit 10 oras, mabilis sumibol ang amag (Late Blight) sa mga dahon ng kamatis at patatas. Mag-spray bago umabot sa 10 oras.",
-        nodeTitle: "📡 KONEKSYON NG KAGAMITAN",
+        chartFootRisk: "● Panganib: ≥10 oras",
+        chartFootPeak: "Tuktok: 11.8 oras",
+        chartFootStatus: "● Nakakonekta",
+        chartCritThresh: "Kritikal (10 oras)",
+        historyNoteTitle: "PAALALA SA MAGSASAKA",
+        historyNoteBody: "Kapag lumampas sa 10 oras ang tuloy-tuloy na basa ng dahon, mabilis sumibol ang amag (Late Blight) sa mga dahon ng kamatis at patatas. Mag-spray bago umabot sa 10 oras.",
+
+        nodeTitle: "KONEKSYON NG KAGAMITAN",
+        lblDeviceName: "Pangalan ng Kagamitan:",
+        lblTargetCrop: "Pananim:",
         cropTarget: "Kamatis / Patatas / Talong",
+        lblWifiNet: "Wi-Fi:",
+        valWifiNet: "Loading... (Nakakonekta)",
+        lblCloudNet: "Koneksyon sa Cloud:",
+        btnHwSettings: "Baguhin ang Ayos ng Kagamitan",
+        researchTitle: "PANANALIKSIK AT DOKUMENTASYON",
+        researchDesc: "Para sa kumpletong pagsusuri, mga pormula sa matematika, at ulat ng pananaliksik:",
+        researchBtn: "Buksan ang Talaan ng Pananaliksik",
+
+        rainChanceLabel: "Pag-asa ng Ulan",
+        batteryLabel: "Baterya",
+        batteryRemain: "Tumatagal pa ng",
+        solarStatus: "Nagkakarga",
+        nodeOnline: "● Aktibo",
+        nodeStandby: "○ Hindi Aktibo",
+        alertTapHint: "Pindutin para sa gabay",
+
         high: {
-          title: "PANGANIB SA SAKIT!",
-          desc: "Napakabasa ng dahon at lupa. Mabilis kumalat ang amag at lanta. Kumilos agad ngayon!",
-          lb: "Amag (Late Blight): MATAAS",
-          bw: "Bacterial Wilt: MATAAS",
+          tag: "PANGANIB",
+          title: "PANGANIB SA SAKIT",
+          desc: "Masyadong basa ang dahon at lupa. Mabilis kumalat ang amag at lanta. Kumilos agad ngayon.",
+          lb: "Amag sa Dahon: Mataas",
+          bw: "Lanta ng Halaman: Mataas",
           lwdBadge: "Basa",
-          lwdNote: "🔴 Napakabasa",
+          lwdNote: "Napakabasa",
+          airBadge: "Alinsangan",
           airNote: "Malamig ang hangin",
           soilBadge: "Babad",
           soilNote: "Babad sa tubig ang ugat",
           soilTBadge: "Normal",
           soilTNote: "Katamtamang init",
           act1Title: "Tabasan ang Dahon sa Ilalim",
-          act1Desc: "Alisin ang mga lumang dahon na malapit sa lupa para mahanginan at matuyo agad.",
+          act1Desc: "Alisin ang mga dahon na malapit sa lupa upang mahanginan at matuyo agad.",
           act2Title: "Huwag Magdilig Ngayon",
-          act2Desc: "Babad na sa tubig ang lupa. Huwag nang dagdagan para hindi mabulok ang ugat.",
+          act2Desc: "Babad na sa tubig ang lupa. Huwag nang dagdagan upang maiwasan ang pagkabulok ng ugat.",
           act3Title: "Mag-spray ng Gamot sa Amag",
           act3Desc: "Mag-spray ng pampigil sa amag (tulad ng Copper) bago pumatak ang ulan bukas."
         },
         moderate: {
+          tag: "MAG-INGAT",
           title: "MAG-INGAT: BASA ANG DAHON",
           desc: "Bumabasa ang mga dahon. Posibleng kapitan ng amag kung magtagal ang basa. Silipin ang taniman.",
-          lb: "Amag: Katamtaman",
-          bw: "Bacterial Wilt: Katamtaman",
+          lb: "Amag sa Dahon: Katamtaman",
+          bw: "Lanta ng Halaman: Katamtaman",
           lwdBadge: "Bantayan",
-          lwdNote: "🟠 Basa pa",
+          lwdNote: "Basa pa",
+          airBadge: "Alinsangan",
           airNote: "Malamig ang hangin",
           soilBadge: "Sapat",
           soilNote: "Sapat ang tubig",
@@ -941,191 +968,260 @@
           act2Title: "Magdilig Lamang sa Umaga",
           act2Desc: "Huwag magdilig sa hapon upang matuyo ang ibabaw ng lupa bago lumubog ang araw.",
           act3Title: "Ihanda ang Gamot sa Halaman",
-          act3Desc: "Ihanda ang pampigil sa amag kung sakaling tuloy-tuloy ang ulan bukas."
+          act3Desc: "Ihanda ang pampigil sa amag kung sakaling magtuloy-tuloy ang ulan bukas."
         },
         safe: {
+          tag: "LIGTAS",
           title: "LIGTAS ANG TANIMAN",
           desc: "Maganda at tuyo ang panahon. Walang banta ng amag o sakit sa halaman ngayon.",
-          lb: "Amag (Late Blight): Ligtas",
-          bw: "Bacterial Wilt: Ligtas",
+          lb: "Amag sa Dahon: Mababa",
+          bw: "Lanta ng Halaman: Mababa",
           lwdBadge: "Tuyo",
-          lwdNote: "🟢 Tuyong dahon",
+          lwdNote: "Tuyong dahon",
+          airBadge: "Alinsangan",
           airNote: "Magandang sikat ng araw",
           soilBadge: "Tamang Basa",
           soilNote: "Tamang tubig sa lupa",
           soilTBadge: "Normal",
           soilTNote: "Normal na temperatura",
           act1Title: "Regular na Pag-iinspeksyon",
-          act1Desc: "Mag-ikot sa taniman at tingnan ang pangkalahatang lusog ng mga tanim.",
+          act1Desc: "Mag-ikot sa taniman at suriin ang pangkalahatang kalusugan ng mga pananim.",
           act2Title: "Normal na Pagdidilig",
-          act2Desc: "Magdilig ayon sa regular na schedule kapag tuyo na ang ibabaw ng lupa.",
+          act2Desc: "Magdilig ayon sa regular na takda kapag tuyo na ang ibabaw ng lupa.",
           act3Title: "Walang Gamot na Kailangan",
-          act3Desc: "Ligtas ang kondisyon. Hindi kailangang mag-spray ng gamot ngayon."
+          act3Desc: "Ligtas ang kalagayan ng panahon. Hindi kailangang mag-spray ng gamot ngayon."
         }
       },
+
       en: {
-        langBtn: "🇬🇧 English",
-        headerSub: "Crop Health Monitor • Brgy. San Jose",
+        appHeaderSub: "Crop Health Monitor • Brgy. San Jose",
+        themeBtn: "Theme",
         tabFarm: "Farm",
         tabHistory: "History",
         tabDevice: "Device",
-        secAction: "📋 WHAT TO DO TODAY",
-        secMetrics: "🌱 CROP CONDITIONS",
-        secWeather: "🌦️ WEATHER FORECAST",
-        secDevice: "🔋 FIELD DEVICE",
+        modalClose: "Close",
+
+        secAction: "RECOMMENDED ACTIONS TODAY",
+        secMetrics: "FIELD CONDITIONS",
+        secWeather: "WEATHER FORECAST",
+        secDevice: "FIELD DEVICE",
+
         unitHours: "hrs",
         unitDays: "days",
-        lblLeaves: "🍃 Leaves",
-        lblAir: "🌡️ Air Temp",
-        lblSoilM: "🌱 Soil Water",
-        lblSoilT: "☀️ Soil Temp",
-        historyTitle: "📈 WEATHER HISTORY",
+        lblLeaves: "Leaf Wetness",
+        lblAir: "Air Temperature",
+        lblSoilM: "Soil Moisture",
+        lblSoilT: "Soil Temperature",
+
+        historyTitle: "WEATHER HISTORY",
         chartTitle: "Leaf Wetness (Past 24 Hours)",
-        historyNoteTitle: "💡 FARMER ADVISORY",
-        historyNoteBody: "When the red line stays above 10 hours, fungal blight spreads rapidly on tomato and potato leaves. Spray protectant before reaching 10 hours.",
-        nodeTitle: "📡 DEVICE CONNECTION",
+        chartFootRisk: "● Risk: ≥10 hrs",
+        chartFootPeak: "Peak: 11.8 hrs",
+        chartFootStatus: "● Connected",
+        chartCritThresh: "Critical (10 hrs)",
+        historyNoteTitle: "FARMER ADVISORY",
+        historyNoteBody: "When leaf wetness exceeds 10 continuous hours, fungal late blight spreads rapidly on tomato and potato leaves. Spray protectant before reaching 10 hours.",
+
+        nodeTitle: "DEVICE CONNECTION",
+        lblDeviceName: "Device Name:",
+        lblTargetCrop: "Target Crop:",
         cropTarget: "Tomato / Potato / Eggplant",
+        lblWifiNet: "Wi-Fi:",
+        valWifiNet: "Loading... (Connected)",
+        lblCloudNet: "Cloud Connection:",
+        btnHwSettings: "Configure Hardware Settings",
+        researchTitle: "RESEARCH & DOCUMENTATION",
+        researchDesc: "For complete scientific data, mathematical models, and defense reports:",
+        researchBtn: "Open Research Dashboard",
+
+        rainChanceLabel: "Rain Chance",
+        batteryLabel: "Battery",
+        batteryRemain: "Remaining:",
+        solarStatus: "Charging",
+        nodeOnline: "● Online",
+        nodeStandby: "○ Offline",
+        alertTapHint: "Tap for advisory",
+
         high: {
-          title: "HIGH DISEASE RISK!",
-          desc: "Leaves and soil are waterlogged. Late blight and wilt spread quickly. Act today!",
-          lb: "Late Blight: HIGH",
-          bw: "Bacterial Wilt: HIGH",
+          tag: "HIGH RISK",
+          title: "HIGH DISEASE RISK",
+          desc: "Leaves and soil are waterlogged. Late blight and bacterial wilt spread quickly. Take action today.",
+          lb: "Late Blight: High Risk",
+          bw: "Bacterial Wilt: High Risk",
           lwdBadge: "Wet",
-          lwdNote: "🔴 Very wet",
-          airNote: "Cool damp air",
-          soilBadge: "Soaked",
-          soilNote: "Root zone saturated",
+          lwdNote: "Very wet",
+          airBadge: "Humidity",
+          airNote: "Cool air",
+          soilBadge: "Saturated",
+          soilNote: "Roots waterlogged",
           soilTBadge: "Normal",
-          soilTNote: "Normal soil temp",
-          act1Title: "Prune Bottom Leaves",
-          act1Desc: "Remove lower leaves near soil so wind can dry plants faster.",
+          soilTNote: "Normal temperature",
+          act1Title: "Prune Lower Leaves",
+          act1Desc: "Remove bottom leaves near the soil to let air circulate and dry the canopy.",
           act2Title: "Stop Watering Today",
-          act2Desc: "Soil is already waterlogged. Extra water accelerates root infection.",
-          act3Title: "Spray Protective Fungicide",
-          act3Desc: "Apply copper fungicide or biocontrol before rain starts tomorrow."
+          act2Desc: "Soil is already saturated. Extra water accelerates root infections.",
+          act3Title: "Apply Protective Spray",
+          act3Desc: "Spray protective copper fungicide before rain begins tomorrow."
         },
         moderate: {
+          tag: "CAUTION",
           title: "CAUTION: DAMP LEAVES",
-          desc: "Leaves are staying wet. Fungal disease can develop if moisture continues. Inspect fields.",
+          desc: "Leaves are staying damp. Fungal disease can develop if moisture continues. Inspect fields.",
           lb: "Late Blight: Moderate",
           bw: "Bacterial Wilt: Moderate",
           lwdBadge: "Watch",
-          lwdNote: "🟠 Still damp",
+          lwdNote: "Still damp",
+          airBadge: "Humidity",
           airNote: "Cool air",
-          soilBadge: "Good",
-          soilNote: "Adequate moisture",
+          soilBadge: "Adequate",
+          soilNote: "Adequate water",
           soilTBadge: "Normal",
-          soilTNote: "Normal soil temp",
+          soilTNote: "Normal temperature",
           act1Title: "Inspect Lower Leaves",
-          act1Desc: "Check for dew or early spots. Clear thick weeds between rows.",
-          act2Title: "Water Early Morning Only",
-          act2Desc: "Avoid evening watering so topsoil can dry before nightfall.",
-          act3Title: "Prepare Protective Spray",
-          act3Desc: "Keep fungicides ready in case rain continues tomorrow."
+          act1Desc: "Check for dew or early blight spots. Clear thick weeds between rows.",
+          act2Title: "Water in Early Morning Only",
+          act2Desc: "Avoid late afternoon watering so topsoil dries before nightfall.",
+          act3Title: "Prepare Crop Protection",
+          act3Desc: "Keep fungicides ready in case wet weather continues tomorrow."
         },
         safe: {
+          tag: "SAFE",
           title: "CROPS ARE SAFE",
-          desc: "Weather is dry and sunny. Low disease risk today.",
-          lb: "Late Blight: Safe",
-          bw: "Bacterial Wilt: Safe",
+          desc: "Weather is clear and dry. Disease risk is low today.",
+          lb: "Late Blight: Low Risk",
+          bw: "Bacterial Wilt: Low Risk",
           lwdBadge: "Dry",
-          lwdNote: "🟢 Dry leaves",
-          airNote: "Sunny conditions",
+          lwdNote: "Dry leaves",
+          airBadge: "Humidity",
+          airNote: "Warm and sunny",
           soilBadge: "Optimal",
           soilNote: "Balanced soil water",
           soilTBadge: "Normal",
-          soilTNote: "Normal soil temp",
+          soilTNote: "Normal temperature",
           act1Title: "Routine Field Scouting",
-          act1Desc: "Walk the fields and monitor normal plant vigor.",
+          act1Desc: "Walk through the field and monitor overall crop health.",
           act2Title: "Normal Watering Schedule",
-          act2Desc: "Proceed with standard watering when topsoil feels dry.",
+          act2Desc: "Water according to normal routine once topsoil feels dry.",
           act3Title: "No Chemical Spray Needed",
-          act3Desc: "Microclimate is safe. Save your inputs today."
+          act3Desc: "Field conditions are safe. Save your agricultural inputs today."
         }
       }
     };
 
-    // Raw Sensor Scenarios (Demo State)
+    // Raw Sensor Scenarios
     const rawScenarios = {
-      high: { lwd: 11.8, airT: 21.4, airRH: 94.2, soilM: 78.4, soilT: 29.8, theme: 'danger-theme', icon: '🚨' },
-      moderate: { lwd: 7.4, airT: 19.8, airRH: 88.5, soilM: 64.2, soilT: 26.5, theme: 'warning-theme', icon: '⚠️' },
-      safe: { lwd: 1.2, airT: 26.8, airRH: 64.0, soilM: 52.0, soilT: 23.4, theme: 'safe-theme', icon: '🟢' }
+      high: { lwd: 11.8, airT: 21.4, airRH: 94.2, soilM: 78.4, soilT: 29.8, theme: 'danger-theme' },
+      moderate: { lwd: 7.4, airT: 19.8, airRH: 88.5, soilM: 64.2, soilT: 26.5, theme: 'warning-theme' },
+      safe: { lwd: 1.2, airT: 26.8, airRH: 64.0, soilM: 52.0, soilT: 23.4, theme: 'safe-theme' }
     };
 
     let activeScenarioKey = 'high';
 
-    function toggleLanguage() {
-      currentLang = currentLang === 'tl' ? 'en' : 'tl';
+    // Set Language explicitly to 'tl' or 'en'
+    function setLanguage(lang) {
+      currentLang = lang;
       localStorage.setItem('farmer_lang', currentLang);
       applyLanguage();
     }
 
     function applyLanguage() {
       const d = farmerDict[currentLang];
-      document.getElementById('langBtnText').innerText = d.langBtn;
-      document.getElementById('appHeaderSub').innerText = d.headerSub;
-      document.getElementById('tabNameFarm').innerText = d.tabFarm;
-      document.getElementById('tabNameHistory').innerText = d.tabHistory;
-      document.getElementById('tabNameDevice').innerText = d.tabDevice;
+
+      // Update Header & Toggles
+      document.getElementById('btnLangTL').className = `lang-opt ${currentLang === 'tl' ? 'active' : ''}`;
+      document.getElementById('btnLangEN').className = `lang-opt ${currentLang === 'en' ? 'active' : ''}`;
+      document.getElementById('appHeaderSub').innerText = d.appHeaderSub;
+      document.getElementById('btnTheme').innerText = d.themeBtn;
+
+      // Update Navigation
+      document.getElementById('tabBtnFarm').innerText = d.tabFarm;
+      document.getElementById('tabBtnHistory').innerText = d.tabHistory;
+      document.getElementById('tabBtnDevice').innerText = d.tabDevice;
+
+      // Update Sections
       document.getElementById('actionTitle').innerText = d.secAction;
       document.getElementById('metricsTitle').innerText = d.secMetrics;
       document.getElementById('weatherTitle').innerText = d.secWeather;
       document.getElementById('deviceTitle').innerText = d.secDevice;
+      document.getElementById('modalCloseBtn').innerText = d.modalClose;
+
+      // Update Tiles Static Labels
       document.getElementById('unitHours').innerText = d.unitHours;
       document.getElementById('nameLWD').innerText = d.lblLeaves;
       document.getElementById('nameAir').innerText = d.lblAir;
       document.getElementById('nameSoilM').innerText = d.lblSoilM;
       document.getElementById('nameSoilT').innerText = d.lblSoilT;
+
+      // Update History Tab
       document.getElementById('historyTitle').innerText = d.historyTitle;
       document.getElementById('chartHeaderMetric').innerText = d.chartTitle;
+      document.getElementById('chartFootRisk').innerText = d.chartFootRisk;
+      document.getElementById('chartFootPeak').innerText = d.chartFootPeak;
+      document.getElementById('chartFootStatus').innerText = d.chartFootStatus;
       document.getElementById('historyNoteTitle').innerText = d.historyNoteTitle;
       document.getElementById('historyNoteBody').innerText = d.historyNoteBody;
-      document.getElementById('nodeDetailsTitle').innerText = d.nodeTitle;
-      document.getElementById('valCropTarget').innerText = d.cropTarget;
 
-      // Re-apply active scenario data with current language
+      // Update Device Tab
+      document.getElementById('nodeDetailsTitle').innerText = d.nodeTitle;
+      document.getElementById('lblDeviceName').innerText = d.lblDeviceName;
+      document.getElementById('lblTargetCrop').innerText = d.lblTargetCrop;
+      document.getElementById('valCropTarget').innerText = d.cropTarget;
+      document.getElementById('lblWifiNet').innerText = d.lblWifiNet;
+      document.getElementById('valWifiNet').innerText = d.valWifiNet;
+      document.getElementById('lblCloudNet').innerText = d.lblCloudNet;
+      document.getElementById('btnHwSettings').innerText = d.btnHwSettings;
+      document.getElementById('researchTitle').innerText = d.researchTitle;
+      document.getElementById('researchDesc').innerText = d.researchDesc;
+      document.getElementById('researchBtn').innerText = d.researchBtn;
+
+      // Re-apply scenario texts in current language
       setScenario(activeScenarioKey);
+
+      // Re-apply weather forecast
+      loadMobileForecast();
     }
 
     function setScenario(key) {
       activeScenarioKey = key;
-      const d = farmerDict[currentLang][key];
+      const d = farmerDict[currentLang];
+      const s = d[key];
       const raw = rawScenarios[key];
 
       // Banner
       const banner = document.getElementById('heroAlertCard');
       banner.className = `status-banner ${raw.theme}`;
-      document.getElementById('heroAlertIcon').innerText = raw.icon;
-      document.getElementById('heroAlertTitle').innerText = d.title;
-      document.getElementById('heroAlertDesc').innerText = d.desc;
-      document.getElementById('pillLateBlight').innerText = d.lb;
-      document.getElementById('pillBacterialWilt').innerText = d.bw;
+      document.getElementById('heroAlertTag').innerText = s.tag;
+      document.getElementById('heroAlertHint').innerText = d.alertTapHint;
+      document.getElementById('heroAlertTitle').innerText = s.title;
+      document.getElementById('heroAlertDesc').innerText = s.desc;
+      document.getElementById('pillLateBlight').innerText = s.lb;
+      document.getElementById('pillBacterialWilt').innerText = s.bw;
 
       // Actions
-      document.getElementById('advTitle1').innerText = d.act1Title;
-      document.getElementById('advDesc1').innerText = d.act1Desc;
-      document.getElementById('advTitle2').innerText = d.act2Title;
-      document.getElementById('advDesc2').innerText = d.act2Desc;
-      document.getElementById('advTitle3').innerText = d.act3Title;
-      document.getElementById('advDesc3').innerText = d.act3Desc;
+      document.getElementById('advTitle1').innerText = s.act1Title;
+      document.getElementById('advDesc1').innerText = s.act1Desc;
+      document.getElementById('advTitle2').innerText = s.act2Title;
+      document.getElementById('advDesc2').innerText = s.act2Desc;
+      document.getElementById('advTitle3').innerText = s.act3Title;
+      document.getElementById('advDesc3').innerText = s.act3Desc;
 
       // Tiles
-      document.getElementById('tileValLWD').innerHTML = `${raw.lwd} <span>${farmerDict[currentLang].unitHours}</span>`;
-      document.getElementById('tileBadgeLWD').innerText = d.lwdBadge;
+      document.getElementById('tileValLWD').innerHTML = `${raw.lwd} <span id="unitHours">${d.unitHours}</span>`;
+      document.getElementById('tileBadgeLWD').innerText = s.lwdBadge;
       document.getElementById('tileBadgeLWD').className = `tile-badge ${key === 'high' ? 'badge-danger' : key === 'moderate' ? 'badge-warning' : 'badge-safe'}`;
-      document.getElementById('tileNoteLWD').innerText = d.lwdNote;
+      document.getElementById('tileNoteLWD').innerText = s.lwdNote;
 
       document.getElementById('tileValAir').innerHTML = `${raw.airT}<span>°C</span>`;
-      document.getElementById('tileBadgeAir').innerText = `${raw.airRH}% RH`;
-      document.getElementById('tileNoteAir').innerText = d.airNote;
+      document.getElementById('tileBadgeAir').innerText = `${raw.airRH}% ${s.airBadge}`;
+      document.getElementById('tileNoteAir').innerText = s.airNote;
 
       document.getElementById('tileValSoilM').innerHTML = `${raw.soilM}<span>%</span>`;
-      document.getElementById('tileBadgeSoilM').innerText = d.soilBadge;
-      document.getElementById('tileNoteSoilM').innerText = d.soilNote;
+      document.getElementById('tileBadgeSoilM').innerText = s.soilBadge;
+      document.getElementById('tileNoteSoilM').innerText = s.soilNote;
 
       document.getElementById('tileValSoilT').innerHTML = `${raw.soilT}<span>°C</span>`;
-      document.getElementById('tileBadgeSoilT').innerText = d.soilTBadge;
-      document.getElementById('tileNoteSoilT').innerText = d.soilTNote;
+      document.getElementById('tileBadgeSoilT').innerText = s.soilTBadge;
+      document.getElementById('tileNoteSoilT').innerText = s.soilTNote;
 
       // Redraw chart
       drawOverviewChart();
@@ -1142,70 +1238,78 @@
       const isHigh = lwd >= 10.0 || soilM >= 75.0;
       const isMod = (lwd >= 6.0 && lwd < 10.0) || (soilM >= 60.0 && soilM < 75.0);
       const key = isHigh ? 'high' : (isMod ? 'moderate' : 'safe');
-      const d = farmerDict[currentLang][key];
+      activeScenarioKey = key;
+
+      const d = farmerDict[currentLang];
+      const s = d[key];
 
       // Update Banner
       const banner = document.getElementById('heroAlertCard');
       banner.className = `status-banner ${isHigh ? 'danger-theme' : isMod ? 'warning-theme' : 'safe-theme'}`;
-      document.getElementById('heroAlertIcon').innerText = isHigh ? '🚨' : isMod ? '⚠️' : '🟢';
-      document.getElementById('heroAlertTitle').innerText = d.title;
-      document.getElementById('heroAlertDesc').innerText = d.desc;
-      document.getElementById('pillLateBlight').innerText = `${currentLang === 'tl' ? 'Amag' : 'Late Blight'}: ${isHigh ? 'HIGH' : isMod ? 'MODERATE' : 'SAFE'}`;
-      document.getElementById('pillBacterialWilt').innerText = `Bacterial Wilt: ${isHigh ? 'HIGH' : isMod ? 'MODERATE' : 'SAFE'}`;
+      document.getElementById('heroAlertTag').innerText = s.tag;
+      document.getElementById('heroAlertHint').innerText = d.alertTapHint;
+      document.getElementById('heroAlertTitle').innerText = s.title;
+      document.getElementById('heroAlertDesc').innerText = s.desc;
+      document.getElementById('pillLateBlight').innerText = s.lb;
+      document.getElementById('pillBacterialWilt').innerText = s.bw;
 
       // Update Actions
-      document.getElementById('advTitle1').innerText = d.act1Title;
-      document.getElementById('advDesc1').innerText = d.act1Desc;
-      document.getElementById('advTitle2').innerText = d.act2Title;
-      document.getElementById('advDesc2').innerText = d.act2Desc;
-      document.getElementById('advTitle3').innerText = d.act3Title;
-      document.getElementById('advDesc3').innerText = d.act3Desc;
+      document.getElementById('advTitle1').innerText = s.act1Title;
+      document.getElementById('advDesc1').innerText = s.act1Desc;
+      document.getElementById('advTitle2').innerText = s.act2Title;
+      document.getElementById('advDesc2').innerText = s.act2Desc;
+      document.getElementById('advTitle3').innerText = s.act3Title;
+      document.getElementById('advDesc3').innerText = s.act3Desc;
 
       // Update Tiles
-      document.getElementById('tileValLWD').innerHTML = `${lwd} <span>${farmerDict[currentLang].unitHours}</span>`;
-      document.getElementById('tileBadgeLWD').innerText = d.lwdBadge;
+      document.getElementById('tileValLWD').innerHTML = `${lwd} <span id="unitHours">${d.unitHours}</span>`;
+      document.getElementById('tileBadgeLWD').innerText = s.lwdBadge;
       document.getElementById('tileBadgeLWD').className = `tile-badge ${isHigh ? 'badge-danger' : isMod ? 'badge-warning' : 'badge-safe'}`;
-      document.getElementById('tileNoteLWD').innerText = d.lwdNote;
+      document.getElementById('tileNoteLWD').innerText = s.lwdNote;
 
       document.getElementById('tileValAir').innerHTML = `${airT}<span>°C</span>`;
-      document.getElementById('tileBadgeAir').innerText = `${airRH}% RH`;
-      document.getElementById('tileNoteAir').innerText = d.airNote;
+      document.getElementById('tileBadgeAir').innerText = `${airRH}% ${s.airBadge}`;
+      document.getElementById('tileNoteAir').innerText = s.airNote;
 
       document.getElementById('tileValSoilM').innerHTML = `${soilM}<span>%</span>`;
-      document.getElementById('tileBadgeSoilM').innerText = d.soilBadge;
-      document.getElementById('tileNoteSoilM').innerText = d.soilNote;
+      document.getElementById('tileBadgeSoilM').innerText = s.soilBadge;
+      document.getElementById('tileNoteSoilM').innerText = s.soilNote;
 
       document.getElementById('tileValSoilT').innerHTML = `${soilT}<span>°C</span>`;
-      document.getElementById('tileBadgeSoilT').innerText = d.soilTBadge;
-      document.getElementById('tileNoteSoilT').innerText = d.soilTNote;
+      document.getElementById('tileBadgeSoilT').innerText = s.soilTBadge;
+      document.getElementById('tileNoteSoilT').innerText = s.soilTNote;
 
-      // Battery & Solar
+      // Battery & Solar (Zero Emojis)
       const batt = parseInt(raw.battery_percent ?? 94);
-      document.getElementById('mDeviceBattTitle').innerText = `${batt}% ${currentLang === 'tl' ? 'Baterya' : 'Battery'}`;
+      document.getElementById('mDeviceBattTitle').innerText = `${batt}% ${d.batteryLabel}`;
       const autonomyDays = ((batt / 100) * 47.0).toFixed(0);
-      document.getElementById('mDeviceBattSub').innerText = `${currentLang === 'tl' ? 'Tumatagal pa ng' : 'Remaining:'} ~${autonomyDays} ${farmerDict[currentLang].unitDays}`;
+      document.getElementById('mDeviceBattSub').innerText = `${d.batteryRemain} ~${autonomyDays} ${d.unitDays}`;
       const solarW = parseFloat(raw.solar_watts ?? 18.4).toFixed(1);
-      document.getElementById('mDeviceSolarStatus').innerText = `☀️ +${solarW}W Solar`;
+      document.getElementById('mDeviceSolarStatus').innerText = `+${solarW}W Solar`;
+      document.getElementById('mDeviceSolarSub').innerText = d.solarStatus;
     }
 
     // --- Weather Forecast Fusion ---
     async function loadMobileForecast() {
+      const d = farmerDict[currentLang];
       if (!window.SolanaHardware) return;
       const forecast = await window.SolanaHardware.fetchForecast();
       if (!forecast || !forecast.forecast_summary) return;
       const fs = forecast.forecast_summary;
 
       const rainEl = document.getElementById('mRainProb');
-      if (rainEl) rainEl.innerText = `${fs.max_rain_probability_48h}% ${currentLang === 'tl' ? 'Ulan' : 'Rain'}`;
+      if (rainEl) rainEl.innerText = `${fs.max_rain_probability_48h}% ${d.rainChanceLabel}`;
 
       const textEl = document.getElementById('mForecastText');
       if (textEl) {
         if (currentLang === 'tl') {
           textEl.innerText = fs.max_rain_probability_48h >= 60
-            ? "Inaasahan ang malakas na ulan bukas. Mag-spray ng pamprotektang gamot bago pumatak ang ulan!"
+            ? "Inaasahan ang malakas na ulan bukas. Mag-spray ng pamprotektang gamot bago pumatak ang ulan bukas."
             : "Maaliwalas at maganda ang sikat ng araw sa susunod na 48 oras. Walang banta ng amag.";
         } else {
-          textEl.innerText = fs.advisory;
+          textEl.innerText = fs.max_rain_probability_48h >= 60
+            ? "Heavy rain is expected tomorrow. Apply protective fungicide before rainfall begins."
+            : "Clear conditions expected for the next 48 hours. Fungal risk is low.";
         }
       }
     }
@@ -1241,7 +1345,6 @@
       const h = rect.height;
       ctx.clearRect(0, 0, w, h);
 
-      // Points representing 24-hour leaf wetness accumulation
       const points = activeScenarioKey === 'high'
         ? [1.0, 2.2, 4.0, 6.5, 8.2, 9.8, 10.5, 11.2, 11.8]
         : activeScenarioKey === 'moderate'
@@ -1257,7 +1360,7 @@
         return { x, y };
       });
 
-      // 10-hour critical threshold dashed line
+      // 10-hour critical threshold line
       const threshY = h - ((10 - minVal) / (maxVal - minVal)) * (h - 30) - 15;
       ctx.beginPath();
       ctx.setLineDash([4, 4]);
@@ -1268,10 +1371,11 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Threshold label
-      ctx.fillStyle = "rgba(239, 68, 68, 0.8)";
+      // Threshold label (Zero emojis)
+      ctx.fillStyle = "rgba(239, 68, 68, 0.85)";
       ctx.font = "bold 10px sans-serif";
-      ctx.fillText(currentLang === 'tl' ? "Kritikal (10h)" : "Critical (10h)", w - 75, threshY - 4);
+      const critText = farmerDict[currentLang].chartCritThresh;
+      ctx.fillText(critText, w - 85, threshY - 4);
 
       // Gradient Fill
       const grad = ctx.createLinearGradient(0, 0, 0, h);
@@ -1322,70 +1426,70 @@
       drawOverviewChart();
     }
 
-    // --- Simple Farmer Modals ---
+    // --- Simple Farmer Modals (Zero Emojis) ---
     const farmerModals = {
       disease: {
         tl: {
-          title: "🚨 Gabay sa Sakit ng Halaman",
-          body: `<p><strong>Bakit may babala?</strong><br>Basa ang mga dahon ng higit sa 10 oras habang malamig ang klima. Ito ang tamang panahon para sumibol ang <strong>Amag (Late Blight)</strong> at kumalat ang <strong>Lanta (Bacterial Wilt)</strong>.</p>
-                 <br><p><strong>Ano ang dapat gawin?</strong><br>
-                 1. ✂️ Tabasan ang mga dahon sa ilalim na sumasayad sa lupa.<br>
-                 2. 🚫 Huwag magdilig ngayong araw upang matuyo ang lupa.<br>
-                 3. 💊 Mag-spray ng protective fungicide (tulad ng Copper) bago pumatak ang ulan.</p>`
+          title: "Gabay sa Sakit ng Halaman",
+          body: `<p><strong>Bakit may babala?</strong><br>Basa ang mga dahon ng higit sa 10 oras habang malamig ang klima. Ito ang tamang panahon para sumibol ang <strong>Amag sa Dahon (Late Blight)</strong> at kumalat ang <strong>Lanta ng Halaman (Bacterial Wilt)</strong>.</p>
+                 <br><p><strong>Mga dapat gawin:</strong><br>
+                 1. Tabasan ang mga dahon sa ilalim na sumasayad sa lupa upang mahanginan.<br>
+                 2. Huwag magdilig ngayong araw upang matuyo ang lupa.<br>
+                 3. Mag-spray ng pamprotektang fungicide (tulad ng Copper) bago pumatak ang ulan bukas.</p>`
         },
         en: {
-          title: "🚨 Crop Disease Advisory",
-          body: `<p><strong>Why is there an alert?</strong><br>Leaves have been wet for &ge;10 hours during cool temperatures. This triggers <strong>Late Blight</strong> and <strong>Bacterial Wilt</strong> infection.</p>
+          title: "Crop Disease Advisory",
+          body: `<p><strong>Why is there an alert?</strong><br>Leaves have been continuously wet for 10 or more hours during cool temperatures. This triggers <strong>Late Blight</strong> and <strong>Bacterial Wilt</strong> infections.</p>
                  <br><p><strong>Recommended Actions:</strong><br>
-                 1. ✂️ Prune lower leaves near the soil to let wind dry the plants.<br>
-                 2. 🚫 Stop watering today to prevent root rot.<br>
-                 3. 💊 Apply protective copper fungicide before rain falls.</p>`
+                 1. Prune lower leaves near the soil to let wind dry the plants.<br>
+                 2. Stop watering today to prevent root rot.<br>
+                 3. Apply protective copper fungicide before rain begins tomorrow.</p>`
         }
       },
       leaf: {
         tl: {
-          title: "🍃 Basa ng Dahon (Leaf Wetness)",
+          title: "Basa ng Dahon",
           body: `<p>Sinusukat ng sensor kung gaano katagal nang basa ang mga dahon ng hamog o ulan.</p>
                  <p style="margin-top:8px;">Kapag lumampas sa <strong>10 oras</strong> na tuloy-tuloy na basa ang dahon, madaling kapitan ng amag ang kamatis at patatas. Panatilihing maaliwalas ang pagitan ng mga halaman.</p>`
         },
         en: {
-          title: "🍃 Leaf Wetness Sensor",
-          body: `<p>Measures how long leaf surfaces have been continuously wet from dew or rain.</p>
-                 <p style="margin-top:8px;">Exceeding <strong>10 continuous hours</strong> of wetness at cool temperatures allows Late Blight spores to penetrate leaves.</p>`
+          title: "Leaf Wetness",
+          body: `<p>Measures how long leaf surfaces have been continuously wet from dew or rainfall.</p>
+                 <p style="margin-top:8px;">Continuous wetness exceeding <strong>10 hours</strong> allows late blight spores to penetrate leaves. Keep plant spacing ventilated.</p>`
         }
       },
       ambient: {
         tl: {
-          title: "🌡️ Temperatura at Alinsangan",
+          title: "Temperatura at Alinsangan ng Hangin",
           body: `<p>Sinusukat ang lamig o init ng hangin sa paligid ng tanim.</p>
                  <p style="margin-top:8px;">Ang temperaturang <strong>16°C hanggang 22°C</strong> na may alinsangang higit sa <strong>90%</strong> ang pinakapaboritong panahon ng amag (Late Blight).</p>`
         },
         en: {
-          title: "🌡️ Air Temperature & Humidity",
+          title: "Air Temperature & Humidity",
           body: `<p>Measures air conditions inside the crop canopy.</p>
-                 <p style="margin-top:8px;">Temperatures between <strong>16°C and 22°C</strong> with relative humidity above <strong>90%</strong> are optimal for blight multiplication.</p>`
+                 <p style="margin-top:8px;">Temperatures between <strong>16°C and 22°C</strong> with relative humidity above <strong>90%</strong> provide ideal conditions for fungal blight multiplication.</p>`
         }
       },
       soil_moisture: {
         tl: {
-          title: "🌱 Tubig sa Lupa (Soil Water)",
+          title: "Tubig sa Lupa",
           body: `<p>Sinusukat ang dami ng tubig sa ugat ng halaman.</p>
                  <p style="margin-top:8px;">Kapag umabot sa <strong>75% pataas</strong>, babad na ang ugat sa tubig. Ang labis na tubig ay nagdudulot ng pagkabulok at pagkalat ng Bacterial Wilt. Huwag magdilig kapag babad pa ang lupa.</p>`
         },
         en: {
-          title: "🌱 Soil Moisture",
-          body: `<p>Measures moisture levels in the root zone.</p>
-                 <p style="margin-top:8px;">Readings above <strong>75%</strong> indicate waterlogging. Saturated soil facilitates bacterial wilt spread and root damage. Suspend irrigation.</p>`
+          title: "Soil Moisture",
+          body: `<p>Measures water saturation in the root zone.</p>
+                 <p style="margin-top:8px;">Readings above <strong>75%</strong> indicate waterlogging. Excess moisture promotes bacterial wilt spread and root damage. Suspend irrigation.</p>`
         }
       },
       soil_temp: {
         tl: {
-          title: "☀️ Init ng Lupa (Soil Temp)",
+          title: "Temperatura ng Lupa",
           body: `<p>Sinusukat ang temperatura sa ilalim ng lupa (10cm lalim).</p>
                  <p style="margin-top:8px;">Ang temperaturang <strong>28°C hanggang 32°C</strong> sa basang lupa ang nagpapadami sa mikrobyo ng Bacterial Wilt.</p>`
         },
         en: {
-          title: "☀️ Soil Temperature",
+          title: "Soil Temperature",
           body: `<p>Measures subsurface temperature at 10cm depth.</p>
                  <p style="margin-top:8px;">Temperatures between <strong>28°C and 32°C</strong> accelerate bacterial wilt multiplication in moist soil.</p>`
         }
@@ -1437,8 +1541,9 @@
       });
       window.SolanaHardware.onStatusChange((status) => {
         const badge = document.getElementById('nodeStatusBadge');
+        const d = farmerDict[currentLang];
         if (badge) {
-          badge.innerText = status === 'connected' ? '● Online' : '○ Standby';
+          badge.innerText = status === 'connected' ? d.nodeOnline : d.nodeStandby;
           badge.style.color = status === 'connected' ? 'var(--ios-green)' : 'var(--text-secondary)';
         }
       });
