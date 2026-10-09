@@ -4,10 +4,10 @@ echo ==================================================================
 echo   SOLANAWATCH: USB SERIAL TO CLOUD BRIDGE (LAPTOP FORWARDER)
 echo ==================================================================
 echo.
-set /p CLOUD_URL="Enter your live Vercel URL (or press Enter for http://localhost:5000/api/telemetry): "
+set /p CLOUD_URL="Enter your live Vercel URL (or press Enter for https://solanawatch-roan.vercel.app/api/telemetry): "
 
 if "%CLOUD_URL%"=="" (
-    set CLOUD_URL=http://localhost:5000/api/telemetry
+    set CLOUD_URL=https://solanawatch-roan.vercel.app/api/telemetry
 )
 
 echo.

@@ -19,7 +19,7 @@
   // otherwise fallback to stored URL or default http://localhost:5000
   const defaultUrl = window.location.protocol.startsWith('http')
     ? window.location.origin
-    : 'http://localhost:5000';
+    : 'https://solanawatch-roan.vercel.app';
 
   const HardwareBridge = {
     apiUrl: localStorage.getItem('solanawatch_api_url') || defaultUrl,

@@ -64,8 +64,8 @@ def main():
     parser = argparse.ArgumentParser(description="SolanaWatch Serial to Cloud Forwarder")
     parser.add_argument("--port", type=str, default=None, help="COM port (e.g. COM3 or /dev/ttyUSB0)")
     parser.add_argument("--baud", type=int, default=115200, help="Baud rate (default: 115200)")
-    parser.add_argument("--url", type=str, default="http://localhost:5000/api/telemetry", 
-                        help="Backend URL (e.g. https://your-app.vercel.app/api/telemetry)")
+    parser.add_argument("--url", type=str, default="https://solanawatch-roan.vercel.app/api/telemetry", 
+                        help="Backend URL (default: https://solanawatch-roan.vercel.app/api/telemetry)")
     args = parser.parse_args()
 
     port = args.port or find_esp32_port()

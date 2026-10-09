@@ -44,7 +44,7 @@ const char* WIFI_PASSWORD = "BingChilling101";
 // SolanaWatch Telemetry Endpoint URL:
 // - FOR VERCEL DEPLOYMENT: "https://your-app-name.vercel.app/api/telemetry"
 // - FOR LOCAL LAPTOP SERVER: "http://192.168.1.XXX:5000/api/telemetry"
-const char* BACKEND_API_URL = "https://your-app-name.vercel.app/api/telemetry";
+const char* BACKEND_API_URL = "https://solanawatch-roan.vercel.app/api/telemetry";
 
 // Telemetry Node Identifier
 const char* NODE_ID = "SOLANA-NODE-01";
