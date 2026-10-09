@@ -183,3 +183,29 @@ You will see live packets posted to your cloud server every 3 seconds!
 - **PC Agronomist Dashboard**: `https://solanawatch.vercel.app/desktop.html`
 
 Both dashboards automatically detect that they are running on Vercel and seamlessly pull real-time telemetry and disease advisories from `/api/telemetry/latest`.
+
+### 4. Test 48-Hour Weather Forecast Fusion
+Visit:
+```
+https://solanawatch.vercel.app/api/forecast
+```
+Returns 48-hour precipitation probability and pre-symptomatic disease favorability calculated from satellite weather data.
+
+### 5. Test Live Disease Alerts (Telegram / SMS)
+Send a test alert from PowerShell or the browser:
+```powershell
+curl -X POST https://solanawatch.vercel.app/api/alerts/test -H "Content-Type: application/json"
+```
+
+---
+
+## 📲 Optional: Configure Telegram & SMS Alerts in Vercel
+
+To receive real phone notifications when Late Blight or Bacterial Wilt hits **HIGH RISK**:
+
+1. In your **Vercel Project Dashboard** > **Settings** > **Environment Variables**, you can optionally add:
+   - `TELEGRAM_BOT_TOKEN`: Your Telegram Bot API token (create one for free via `@BotFather`).
+   - `TELEGRAM_CHAT_ID`: Your chat ID or group chat ID.
+   - `SEMAPHORE_API_KEY`: Semaphore API key for Philippine SMS.
+   - `SEMAPHORE_PHONE_NUMBER`: Recipient phone number (e.g. `09171234567`).
+2. When high pathogen favorability is detected, SolanaWatch automatically fires warning alerts with zero human intervention!
