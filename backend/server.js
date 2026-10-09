@@ -324,63 +324,63 @@ function generateAgronomicAdvisory(lbRisk, bwRisk, lwd, soilM) {
   if (lbRisk.risk_level === 'HIGH' || bwRisk.risk_level === 'HIGH') {
     return {
       status_tier: 'danger-theme',
-      badge_text: 'CRITICAL ALERT',
-      headline: 'Pathogen Outbreak Imminent',
-      description: `Adapted Wallin SV reached ${lbRisk.severity_value} with ${lwd}h leaf wetness. Soil hydrothermal risk is at ${bwRisk.risk_score.toFixed(2)}.`,
+      badge_text: 'HIGH RISK',
+      headline: '🚨 Disease Risk is High',
+      description: `Leaves are wet (${lwd}h) and soil is soaked. Fungal spores and bacteria can harm crops today.`,
       advisories: [
         {
-          title: "Immediate Canopy Aeration & Pruning",
-          desc: "Initiate selective suckering and lower-leaf pruning to promote laminar airflow and accelerate foliar evaporation."
+          title: "✂️ Prune Lower Leaves",
+          desc: "Remove old bottom leaves so fresh wind can dry the plants faster."
         },
         {
-          title: "Suspend Drip & Overhead Irrigation",
-          desc: `Soil moisture is at ${soilM}% VWC. Halting irrigation prevents bacterial vascular mobility in the rhizosphere.`
+          title: "🚫 Stop Watering Today",
+          desc: `Soil is already soaked (${soilM}%). Adding more water will damage plant roots.`
         },
         {
-          title: "Preventive Bio-Fungicide Barrier",
-          desc: "Apply copper hydroxide or Bacillus subtilis barrier spray within 12 hours before initial hyphal penetration."
+          title: "💊 Spray Protective Fungicide",
+          desc: "Spray copper or bio-fungicide today to protect before disease enters leaves."
         }
       ]
     };
   } else if (lbRisk.risk_level === 'MODERATE' || bwRisk.risk_level === 'MODERATE') {
     return {
       status_tier: 'warning-theme',
-      badge_text: 'WARNING ADVISORY',
-      headline: 'Developing Microclimate Advisory',
-      description: `Foliar leaf wetness accumulating (${lwd}h). Environmental conditions are moderately favorable for zoosporangia germination.`,
+      badge_text: 'CAUTION',
+      headline: '⚠️ Caution: Damp Field',
+      description: `Moisture is building up on leaves (${lwd}h). Keep an eye on your field today.`,
       advisories: [
         {
-          title: "Inspect Foliar Canopy Density",
-          desc: "Check lower plant tier for dew retention; clear inter-row weeds to facilitate natural cross-ventilation."
+          title: "👀 Check Lower Leaves",
+          desc: "Check under the leaves for trapped dew and clear thick weeds between rows."
         },
         {
-          title: "Regulate Irrigation Schedules",
-          desc: "Switch to early morning drip cycles only to allow bed surface drying before evening dew point."
+          title: "💧 Water Early Morning Only",
+          desc: "Water early in the morning so the crop can dry before nighttime."
         },
         {
-          title: "Prepare Bio-Control Agents",
-          desc: "Stage preventive biological agents in case leaf wetness exceeds the critical threshold."
+          title: "📦 Prepare Bio-Fungicide",
+          desc: "Have your protective spray ready in case rain continues tomorrow."
         }
       ]
     };
   } else {
     return {
       status_tier: 'safe-theme',
-      badge_text: 'OPTIMAL CONDITIONS',
-      headline: 'Optimal Crop Microclimate',
-      description: `Foliar surfaces are dry. Soil moisture (${soilM}%) and root-zone temperatures are well within safe physiological parameters.`,
+      badge_text: 'SAFE',
+      headline: '🟢 Crops Are Safe & Healthy',
+      description: 'Leaves are dry and soil moisture is balanced. No disease threat detected.',
       advisories: [
         {
-          title: "Routine Crop Scouting",
-          desc: "Maintain standard weekly visual inspection for insect vectors and physiological vigor."
+          title: "🌱 Normal Crop Inspection",
+          desc: "Take a regular walk through the field to check plant vigor."
         },
         {
-          title: "Normal Balanced Irrigation",
-          desc: "Proceed with standard fertigation program at 50%–60% field capacity."
+          title: "💧 Water Crops as Normal",
+          desc: "Continue your regular watering schedule."
         },
         {
-          title: "No Chemical Action Required",
-          desc: "Microclimate remains unfavorable for sporulation and bacterial proliferation."
+          title: "✅ No Spraying Needed",
+          desc: "Save your chemicals and money; weather conditions are safe."
         }
       ]
     };

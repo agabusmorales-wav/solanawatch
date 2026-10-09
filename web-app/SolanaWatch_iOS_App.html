@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="SolanaWatch" />
   <meta name="theme-color" content="#000000" />
+  <link rel="manifest" href="/manifest.json" />
 
   <!-- Apple System Fonts & Inter Fallback -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -639,6 +640,27 @@
       transform: scale(1.08);
     }
 
+    .nav-lang-btn {
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 14px;
+      background: var(--fill-secondary);
+      border: 0.5px solid var(--border-subtle);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      color: var(--label-primary);
+      font-size: 11.5px;
+      font-weight: 700;
+      font-family: var(--font-ios);
+      transition: all 0.2s var(--ios-spring);
+    }
+    .nav-lang-btn:hover {
+      background: var(--fill-primary);
+      transform: scale(1.04);
+    }
+
     .nav-large-title-row {
       display: flex;
       align-items: baseline;
@@ -1181,6 +1203,58 @@
       line-height: 1.4;
     }
 
+    /* Farmer-Friendly Direct Action Cards */
+    .farmer-action-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .farmer-action-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--fill-tertiary);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 12px 14px;
+      transition: transform 0.2s var(--ios-spring);
+    }
+
+    .farmer-action-item:active {
+      transform: scale(0.98);
+    }
+
+    .farmer-action-icon-wrap {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--fill-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      flex-shrink: 0;
+    }
+
+    .farmer-action-content {
+      flex: 1;
+    }
+
+    .farmer-action-content h5 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--label-primary);
+      margin-bottom: 2px;
+      line-height: 1.25;
+    }
+
+    .farmer-action-content p {
+      font-size: 12px;
+      color: var(--label-secondary);
+      line-height: 1.35;
+    }
+
     /* Pathogen Formula Cards */
     .formula-math-box {
       background: var(--fill-tertiary);
@@ -1464,7 +1538,7 @@
     </header>
 
     <!-- ==========================================================================
-         IPHONE 16 PRO DEVICE CONTAINER
+         IPHONE DEVICE CONTAINER
          ========================================================================== -->
     <div class="device-container full-mode" id="deviceContainer">
       <div class="ios-screen">
@@ -1526,12 +1600,26 @@
         <!-- iOS NAVIGATION BAR (Large Title & Grouped Subtitle) -->
         <div class="ios-nav-bar">
           <div class="nav-top-row">
-            <span class="nav-date-pill" id="navDateString">THURSDAY, SEP 17 • BRGY. SAN JOSE</span>
-            <div class="nav-avatar-btn" onclick="switchTab('field')" title="View Field & Team">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="8" r="5" />
-                <path d="M20 21a8 8 0 1 0-16 0" />
-              </svg>
+            <span class="nav-date-pill" id="navDateString">HUWEBES • BRGY. SAN JOSE</span>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <!-- 1-Tap Bilingual Toggle for Farmers -->
+              <button class="nav-lang-btn" id="langToggleBtn" onclick="toggleFarmerLanguage()" title="Switch Language / Palitan ang Wika">
+                <span>🇵🇭 Tagalog</span>
+              </button>
+              <!-- HW Link Button on mobile -->
+              <button class="nav-avatar-btn" onclick="window.SolanaHardware.openModal()" title="Hardware Link Configuration" style="font-size: 13px;">
+                <span>📡</span>
+              </button>
+              <!-- Theme Switcher on mobile -->
+              <button class="nav-avatar-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" style="font-size: 13px;">
+                <span>🌓</span>
+              </button>
+              <div class="nav-avatar-btn" onclick="switchTab('field')" title="View Field & Team">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="8" r="5" />
+                  <path d="M20 21a8 8 0 1 0-16 0" />
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -1562,7 +1650,7 @@
                ---------------------------------------------------------------------- -->
           <section class="tab-page active" id="tab-overview">
 
-            <!-- Disease Outbreak Warning Hero Card -->
+            <!-- Giant High-Contrast Traffic Light Status Banner -->
             <div class="alert-banner-hero danger-theme clickable" id="heroAlertCard" onclick="openModal('disease')">
               <div class="alert-top">
                 <div class="alert-glyph" id="alertGlyphIcon">
@@ -1571,98 +1659,162 @@
                   </svg>
                 </div>
                 <div class="alert-info-text">
-                  <h3 id="heroAlertTitle">Late Blight Outbreak Imminent</h3>
-                  <p id="heroAlertDesc">Adapted Wallin SV reached 3 with 11.8h continuous leaf wetness. Soil bacterial multiplication index is high.</p>
+                  <h3 id="heroAlertTitle">PANGANIB: MAY BANTA NG SAKIT!</h3>
+                  <p id="heroAlertDesc">Napakabasa ng dahon at lupa. Mabilis kumalat ang amag (Late Blight) at bacterial wilt. Kumilos agad ngayon!</p>
                 </div>
               </div>
 
               <div class="alert-pills-row">
                 <div class="alert-pill">
                   <span style="color: var(--ios-red);">●</span>
-                  <span id="pillLateBlight">Late Blight: HIGH (SV 3)</span>
+                  <span id="pillLateBlight">Amag (Late Blight): MATAAS</span>
                 </div>
                 <div class="alert-pill">
                   <span style="color: var(--ios-orange);">●</span>
-                  <span id="pillBacterialWilt">Bacterial Wilt: HIGH (0.80)</span>
+                  <span id="pillBacterialWilt">Bacterial Wilt: MATAAS</span>
                 </div>
-                <div class="alert-pill" style="margin-left: auto; font-weight: 700; color: var(--ios-blue);">
-                  Tap for Action Plan ›
+                <div class="alert-pill" style="margin-left: auto; font-weight: 700; color: var(--ios-blue);" id="pillDetailsLink">
+                  Pindutin para sa detalye ›
+                </div>
+              </div>
+            </div>
+
+            <!-- "What To Do Today" Direct Farmer Action Cards -->
+            <div class="ios-card" style="padding: 14px 16px;">
+              <div class="card-header-row" style="margin-bottom: 10px;">
+                <span class="card-section-title" id="sectionActionTitle">
+                  📋 GAGAWIN NGAYON (ACTION PLAN)
+                </span>
+                <span class="card-meta-action" onclick="openModal('protocol')" id="actionLearnMore">Tuntunin ›</span>
+              </div>
+
+              <div class="farmer-action-list">
+                <div class="farmer-action-item">
+                  <div class="farmer-action-icon-wrap" id="advIcon1">✂️</div>
+                  <div class="farmer-action-content">
+                    <h5 id="advTitle1">Tabasan ang Dahon sa Ilalim</h5>
+                    <p id="advDesc1">Alisin ang mga dahon na malapit sa lupa upang mahanginan at matuyo agad ang halaman.</p>
+                  </div>
+                </div>
+
+                <div class="farmer-action-item">
+                  <div class="farmer-action-icon-wrap" id="advIcon2">🚫</div>
+                  <div class="farmer-action-content">
+                    <h5 id="advTitle2">Huwag Magdilig Ngayon</h5>
+                    <p id="advDesc2">Babad na sa tubig ang lupa (78%). Ang labis na tubig ay nagdudulot ng pagkabulok ng ugat.</p>
+                  </div>
+                </div>
+
+                <div class="farmer-action-item">
+                  <div class="farmer-action-icon-wrap" id="advIcon3">💊</div>
+                  <div class="farmer-action-content">
+                    <h5 id="advTitle3">Mag-spray ng Gamot sa Amag</h5>
+                    <p id="advDesc3">Mag-spray ng protective fungicide (tulad ng Copper) bago pumatak ang ulan.</p>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- 2x2 Microclimate Modular Weather Tiles -->
-            <div class="card-section-title">
-              <span>CANOPY & ROOT-ZONE METRICS</span>
+            <div class="card-section-title" style="margin-top: 2px;">
+              <span id="sectionMetricsTitle">🌱 KONDISYON NG TANIMAN</span>
             </div>
 
             <div class="metric-grid">
               <!-- Tile 1: Leaf Wetness -->
               <div class="metric-tile" onclick="openModal('leaf')">
                 <div class="tile-header">
-                  <span class="tile-title">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
-                    </svg>
-                    Leaf Wetness
+                  <span class="tile-title" id="titleLWD">
+                    🍃 Basa ng Dahon
                   </span>
-                  <span class="tile-badge-status badge-critical" id="tileBadgeLWD">Critical</span>
+                  <span class="tile-badge-status badge-critical" id="tileBadgeLWD">Kritikal</span>
                 </div>
-                <div class="tile-main-val" id="tileValLWD">11.8 <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">hrs</span></div>
+                <div class="tile-main-val" id="tileValLWD">11.8 <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">oras</span></div>
                 <div class="tile-footer-note" id="tileNoteLWD">
-                  <span style="color: var(--ios-red);">●</span> Saturated foliar layer (&ge;10h)
+                  <span style="color: var(--ios-red);">●</span> Napakabasa ang dahon
                 </div>
               </div>
 
               <!-- Tile 2: Ambient Air Temp & RH -->
               <div class="metric-tile" onclick="openModal('ambient')">
                 <div class="tile-header">
-                  <span class="tile-title">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
-                    </svg>
-                    Canopy Temp/RH
+                  <span class="tile-title" id="titleAir">
+                    🌡️ Temperatura
                   </span>
                   <span class="tile-badge-status badge-critical" id="tileBadgeAir">94% RH</span>
                 </div>
                 <div class="tile-main-val" id="tileValAir">21.4<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span></div>
                 <div class="tile-footer-note" id="tileNoteAir">
-                  Stevenson Screen (DHT22)
+                  Malamig at mahalumigmig
                 </div>
               </div>
 
               <!-- Tile 3: Soil Moisture -->
               <div class="metric-tile" onclick="openModal('soil_moisture')">
                 <div class="tile-header">
-                  <span class="tile-title">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
-                    </svg>
-                    Soil Moisture
+                  <span class="tile-title" id="titleSoilM">
+                    🌱 Tubig sa Lupa
                   </span>
-                  <span class="tile-badge-status badge-warning" id="tileBadgeSoilM">78% VWC</span>
+                  <span class="tile-badge-status badge-warning" id="tileBadgeSoilM">Babad</span>
                 </div>
                 <div class="tile-main-val" id="tileValSoilM">78.4 <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">%</span></div>
                 <div class="tile-footer-note" id="tileNoteSoilM">
-                  Waterlogged Root Pore Space
+                  Babad sa tubig ang ugat
                 </div>
               </div>
 
               <!-- Tile 4: Soil Temperature -->
               <div class="metric-tile" onclick="openModal('soil_temp')">
                 <div class="tile-header">
-                  <span class="tile-title">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="12" r="10"/>
-                      <path d="M12 6v6l4 2"/>
-                    </svg>
-                    Soil Temp (10cm)
+                  <span class="tile-title" id="titleSoilT">
+                    ☀️ Init ng Lupa
                   </span>
-                  <span class="tile-badge-status badge-warning" id="tileBadgeSoilT">29.8°C</span>
+                  <span class="tile-badge-status badge-warning" id="tileBadgeSoilT">Mainit</span>
                 </div>
                 <div class="tile-main-val" id="tileValSoilT">29.8<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span></div>
                 <div class="tile-footer-note" id="tileNoteSoilT">
-                  Optimal Pathogen Proliferation
+                  Katamtamang init ng lupa
+                </div>
+              </div>
+            </div>
+
+            <!-- 48-Hour Forecast Mobile Card -->
+            <div class="ios-card" style="padding: 14px 16px;">
+              <div class="card-header-row" style="margin-bottom: 8px;">
+                <span class="card-section-title" id="sectionWeatherTitle">
+                  🌦️ ULAT NG PANAHON (48 ORAS)
+                </span>
+                <span id="mForecastBadge" class="tile-badge-status badge-optimal">Maaliwalas</span>
+              </div>
+              <p id="mForecastText" style="font-size: 13px; color: var(--label-secondary); line-height: 1.4; margin-bottom: 10px;">
+                Inaalam ang paparating na ulan para sa taniman sa Benguet...
+              </p>
+              <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: var(--label-secondary); background: var(--fill-tertiary); border-radius: 10px; padding: 8px 12px;">
+                <span id="labelRainProb">Ulan (48h): <strong id="mRainProb" style="color: var(--ios-blue);">--%</strong></span>
+                <span id="labelHighRh">Mahalumigmig: <strong id="mHighRhHours" style="color: var(--ios-orange);">--h</strong></span>
+                <span id="labelAutonomy">Baterya: <strong id="mAutonomyDays" style="color: var(--ios-green);">44.2d</strong></span>
+              </div>
+            </div>
+
+            <!-- Simplified Device Status Card -->
+            <div class="ios-card" style="padding: 14px 16px;">
+              <div class="card-header-row" style="margin-bottom: 8px;">
+                <span class="card-section-title" id="sectionDeviceTitle">
+                  🔋 KAGAMITAN AT BATERYA
+                </span>
+                <span class="tile-badge-status badge-optimal" id="nodeStatusBadge">Online</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--label-primary);">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">🔋</span>
+                  <div>
+                    <div style="font-weight: 700;" id="mDeviceBattTitle">94% Baterya (13.3V)</div>
+                    <div style="font-size: 11.5px; color: var(--label-secondary);" id="mDeviceBattSub">Tumatagal pa ng ~44 na araw</div>
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <span style="color: var(--ios-green); font-weight: 700;" id="mDeviceSolarStatus">☀️ +18.4W Solar</span>
+                  <div style="font-size: 11px; color: var(--label-secondary);" id="mDeviceSolarSub">Nagcha-charge</div>
                 </div>
               </div>
             </div>
@@ -1671,8 +1823,8 @@
             <div class="ios-card chart-card">
               <div class="chart-top-bar">
                 <div>
-                  <div class="card-section-title">24-HOUR MICROCLIMATIC DYNAMICS</div>
-                  <div style="font-size: 17px; font-weight: 700; margin-top: 2px;" id="chartHeaderMetric">Leaf Wetness vs. Risk Threshold</div>
+                  <div class="card-section-title" id="chartSectionTitle">24-ORAS NA DOKUMENTASYON</div>
+                  <div style="font-size: 15px; font-weight: 700; margin-top: 2px;" id="chartHeaderMetric">Basa ng Dahon vs Panganib</div>
                 </div>
                 <div class="chart-time-pills">
                   <button class="time-btn" onclick="updateChartTime('6H', this)">6H</button>
@@ -1685,105 +1837,15 @@
                 <canvas id="overviewSparkCanvas"></canvas>
               </div>
 
-              <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: var(--label-secondary); border-top: 0.5px solid var(--separator); padding-top: 8px;">
-                <span>● Critical SV3 Threshold: 10h</span>
-                <span>Max Recorded: 11.8h</span>
-                <span>Edge Sync: 2m ago</span>
-              </div>
-            </div>
-
-            <!-- Contextual Agronomic Recommendations Card -->
-            <div class="ios-card">
-              <div class="card-header-row">
-                <span class="card-section-title">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
-                  </svg>
-                  DECISION SUPPORT & ACTION PLAN
-                </span>
-                <span class="card-meta-action" onclick="openModal('protocol')">Protocols ›</span>
-              </div>
-
-              <div class="advisory-item">
-                <div class="advisory-step-num">1</div>
-                <div class="advisory-text">
-                  <h5 id="advTitle1">Immediate Canopy Aeration</h5>
-                  <p id="advDesc1">Initiate selective suckering and lower-leaf pruning across canopy foliage to promote laminar airflow and accelerate foliar drying.</p>
-                </div>
-              </div>
-
-              <div class="advisory-item">
-                <div class="advisory-step-num">2</div>
-                <div class="advisory-text">
-                  <h5 id="advTitle2">Suspend Drip & Overhead Irrigation</h5>
-                  <p id="advDesc2">Soil volumetric moisture is at 78.4% (waterlogged). Halting irrigation prevents bacterial vascular mobility in the rhizosphere.</p>
-                </div>
-              </div>
-
-              <div class="advisory-item">
-                <div class="advisory-step-num">3</div>
-                <div class="advisory-text">
-                  <h5 id="advTitle3">Preventive Bio-Fungicide Application</h5>
-                  <p id="advDesc3">Apply copper hydroxide or <em>Bacillus subtilis</em> protective barrier spray within 12 hours before initial hyphal penetration.</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Hardware Node Health Inset List -->
-            <div class="ios-inset-list">
-              <div class="inset-list-item" onclick="switchTab('hardware')">
-                <div class="item-icon-box" style="background: var(--ios-green);">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="2" y="7" width="16" height="10" rx="2"/>
-                    <path d="M22 11v2"/>
-                  </svg>
-                </div>
-                <div class="item-content-wrap">
-                  <div class="item-label">ESP32 Sensing Node #1</div>
-                  <div class="item-sublabel">12.8V LiFePO4 • 47-Day Autonomy</div>
-                </div>
-                <div class="item-right-wrap">
-                  <span class="item-val-text" style="color: var(--ios-green);">94% • 13.3V</span>
-                  <div class="item-chevron">›</div>
-                </div>
-              </div>
-
-              <div class="inset-list-item" onclick="switchTab('hardware')">
-                <div class="item-icon-box" style="background: var(--ios-orange);">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="4"/>
-                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
-                  </svg>
-                </div>
-                <div class="item-content-wrap">
-                  <div class="item-label">20W MPPT Solar Generation</div>
-                  <div class="item-sublabel">Net Positive Battery Replenishment</div>
-                </div>
-                <div class="item-right-wrap">
-                  <span class="item-val-text">+18.4 W</span>
-                  <div class="item-chevron">›</div>
-                </div>
-              </div>
-
-              <div class="inset-list-item" onclick="switchTab('hardware')">
-                <div class="item-icon-box" style="background: var(--ios-blue);">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 3a9 9 0 0 0-9 9v7c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-7a9 9 0 0 0-9-9z"/>
-                  </svg>
-                </div>
-                <div class="item-content-wrap">
-                  <div class="item-label">MicroSD Buffer & Wi-Fi Link</div>
-                  <div class="item-sublabel">0 Unsynced Packets • RSSI -58 dBm</div>
-                </div>
-                <div class="item-right-wrap">
-                  <span class="item-val-text" style="color: var(--ios-blue);">Active</span>
-                  <div class="item-chevron">›</div>
-                </div>
+              <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--label-secondary); border-top: 0.5px solid var(--separator); padding-top: 8px;">
+                <span id="chartFootCritical">● Kritikal: &ge;10 oras</span>
+                <span id="chartFootMax">Pinakamataas: 11.8 oras</span>
+                <span id="chartFootSync">Konektado</span>
               </div>
             </div>
 
           </section>
+
 
           <!-- ----------------------------------------------------------------------
                TAB 2: 📊 SENSORS (TELEMETRY)
@@ -2281,7 +2343,7 @@
                   <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
                 </svg>
               </div>
-              <span class="tab-title">Today</span>
+              <span class="tab-title" id="tabLabelToday">Ngayon</span>
               <div class="tab-badge" id="tabAlertBadge">!</div>
             </div>
 
@@ -2292,7 +2354,7 @@
                   <path d="M18 20V10M12 20V4M6 20v-6"/>
                 </svg>
               </div>
-              <span class="tab-title">Sensors</span>
+              <span class="tab-title" id="tabLabelSensors">Mga Sukat</span>
             </div>
 
             <!-- Tab 3: Risk Radar -->
@@ -2302,7 +2364,7 @@
                   <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v6h-2V7zm0 8h2v2h-2v-2z"/>
                 </svg>
               </div>
-              <span class="tab-title">Risk Radar</span>
+              <span class="tab-title" id="tabLabelRisk">Panganib</span>
             </div>
 
             <!-- Tab 4: Hardware -->
@@ -2312,7 +2374,7 @@
                   <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                 </svg>
               </div>
-              <span class="tab-title">Hardware</span>
+              <span class="tab-title" id="tabLabelHardware">Kagamitan</span>
             </div>
 
             <!-- Tab 5: Field -->
@@ -2322,7 +2384,7 @@
                   <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A9.49 9.49 0 0 0 17 8m0 0a12.83 12.83 0 0 0-4-7.66C11 1.77 9 4.24 8 7c3 0 6 0 9 1Z" />
                 </svg>
               </div>
-              <span class="tab-title">Field</span>
+              <span class="tab-title" id="tabLabelField">Bukid</span>
             </div>
           </div>
 
@@ -2367,84 +2429,371 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // --- Presentation Scenarios State Data ---
+    // =========================================================================
+    // FARMER-FRIENDLY BILINGUAL DICTIONARY (🇵🇭 TAGALOG / 🇬🇧 ENGLISH)
+    // =========================================================================
+    let currentFarmerLang = localStorage.getItem('farmer_lang') || 'tl';
+
+    const farmerDict = {
+      tl: {
+        langBtnText: "🇵🇭 Tagalog",
+        navDate: "HUWEBES • BRGY. SAN JOSE",
+        targetCrop: "🌱 Tanim: Solanaceae (Kamatis, Patatas, Talong)",
+        edgeActive: "ESP32 Node 01 • Aktibo",
+        tabToday: "Ngayon",
+        tabSensors: "Mga Sukat",
+        tabRisk: "Panganib",
+        tabHardware: "Kagamitan",
+        tabField: "Bukid",
+        secActions: "📋 GAGAWIN NGAYON (ACTION PLAN)",
+        secMetrics: "🌱 KONDISYON NG TANIMAN",
+        secWeather: "🌦️ ULAT NG PANAHON (48 ORAS)",
+        secDevice: "🔋 KAGAMITAN AT BATERYA",
+        secChart: "24-ORAS NA DOKUMENTASYON",
+        chartTitle: "Basa ng Dahon vs Panganib",
+        chartCritical: "● Kritikal: ≥10 oras",
+        chartMax: "Pinakamataas: 11.8 oras",
+        chartSync: "Konektado",
+        labelRain: "Ulan (48h):",
+        labelRh: "Mahalumigmig:",
+        labelBatt: "Baterya:",
+        btnLearnMore: "Tuntunin ›",
+        titleLWD: "🍃 Basa ng Dahon",
+        titleAir: "🌡️ Temperatura",
+        titleSoilM: "🌱 Tubig sa Lupa",
+        titleSoilT: "☀️ Init ng Lupa",
+        unitHours: "oras",
+        unitDays: "araw",
+        nodeOnline: "Online",
+        solarCharging: "☀️ Nagcha-charge",
+        solarIdle: "Standby",
+        battRemaining: "Tumatagal pa ng",
+        pillDetails: "Pindutin para sa detalye ›",
+        high: {
+          alertTitle: "PANGANIB: MAY BANTA NG SAKIT!",
+          alertDesc: "Napakabasa ng dahon at lupa. Mabilis kumalat ang amag (Late Blight) at bacterial wilt. Kumilos agad ngayon!",
+          pillLB: "Amag (Late Blight): MATAAS",
+          pillBW: "Bacterial Wilt: MATAAS",
+          lwdBadge: "Kritikal",
+          lwdNote: "Napakabasa ang dahon",
+          airNote: "Malamig at mahalumigmig",
+          soilMBadge: "Babad",
+          soilMNote: "Babad sa tubig ang ugat",
+          soilTBadge: "Mainit",
+          soilTNote: "Katamtamang init ng lupa",
+          adv1Icon: "✂️",
+          adv1Title: "Tabasan ang Dahon sa Ilalim",
+          adv1Desc: "Alisin ang mga dahon na malapit sa lupa upang mahanginan at matuyo agad ang halaman.",
+          adv2Icon: "🚫",
+          adv2Title: "Huwag Magdilig Ngayon",
+          adv2Desc: "Babad na sa tubig ang lupa (78%). Ang labis na tubig ay nagdudulot ng pagkabulok ng ugat.",
+          adv3Icon: "💊",
+          adv3Title: "Mag-spray ng Gamot sa Amag",
+          adv3Desc: "Mag-spray ng protective fungicide (tulad ng Copper) bago pumatak ang ulan.",
+          diTitle: "🚨 PANGANIB: May Banta ng Sakit",
+          diSub: "Basa ang dahon (11.8h) • Alinsangan 94%",
+          diBadge: "KRITIKAL"
+        },
+        moderate: {
+          alertTitle: "MAG-INGAT: BUMABASA ANG DAHON",
+          alertDesc: "Malamig at mahalumigmig ang panahon. Posibleng pamugaran ng amag kapag nagtagal ang basa.",
+          pillLB: "Amag: Katamtaman",
+          pillBW: "Bacterial Wilt: Katamtaman",
+          lwdBadge: "Bantayan",
+          lwdNote: "Basa pa ang mga dahon",
+          airNote: "Malamig ang hangin",
+          soilMBadge: "Medyo Basa",
+          soilMNote: "Sapat ang tubig sa lupa",
+          soilTBadge: "Normal",
+          soilTNote: "Normal na temperatura",
+          adv1Icon: "👀",
+          adv1Title: "Silipin ang Ilalim ng Dahon",
+          adv1Desc: "Tingnan kung may namumuong hamog o amag. Tabasan ang masinsing sanga.",
+          adv2Icon: "💧",
+          adv2Title: "Magdilig Lamang sa Umaga",
+          adv2Desc: "Huwag magdilig sa hapon upang matuyo ang ibabaw ng lupa bago lumubog ang araw.",
+          adv3Icon: "📦",
+          adv3Title: "Ihanda ang Gamot sa Halaman",
+          adv3Desc: "Ihanda ang pampigil sa amag kung sakaling tuloy-tuloy ang pag-ulan bukas.",
+          diTitle: "⚠️ MAG-INGAT: Bumabasa ang Dahon",
+          diSub: "Dahon 7.4h • Alinsangan 88%",
+          diBadge: "BANTAYAN"
+        },
+        safe: {
+          alertTitle: "LIGTAS ANG TANIMAN",
+          alertDesc: "Maganda at tuyo ang panahon. Mababa ang banta ng amag o sakit sa halaman ngayon.",
+          pillLB: "Amag (Late Blight): Ligtas",
+          pillBW: "Bacterial Wilt: Ligtas",
+          lwdBadge: "Ligtas",
+          lwdNote: "Tuyong dahon",
+          airNote: "Maganda ang sikat ng araw",
+          soilMBadge: "Tamang Basa",
+          soilMNote: "Tamang tubig sa lupa",
+          soilTBadge: "Normal",
+          soilTNote: "Normal na temperatura",
+          adv1Icon: "🌾",
+          adv1Title: "Regular na Pag-iinspeksyon",
+          adv1Desc: "Mag-ikot sa taniman at tingnan ang pangkalahatang lusog ng mga tanim.",
+          adv2Icon: "💧",
+          adv2Title: "Normal na Pagdidilig",
+          adv2Desc: "Magdilig ayon sa regular na schedule kapag tuyo na ang ibabaw ng lupa.",
+          adv3Icon: "✅",
+          adv3Title: "Walang Gamot na Kailangan",
+          adv3Desc: "Ligtas ang kondisyon. Hindi kailangang mag-spray ng fungicide ngayon.",
+          diTitle: "🟢 LIGTAS: Maganda ang Panahon",
+          diSub: "Tuyo ang Dahon • Lupa 52%",
+          diBadge: "LIGTAS"
+        }
+      },
+      en: {
+        langBtnText: "🇬🇧 English",
+        navDate: "THURSDAY • BRGY. SAN JOSE",
+        targetCrop: "🌱 Target: Solanaceae (Tomato, Potato, Eggplant)",
+        edgeActive: "ESP32 Node 01 • Active",
+        tabToday: "Today",
+        tabSensors: "Sensors",
+        tabRisk: "Risk Radar",
+        tabHardware: "Hardware",
+        tabField: "Field",
+        secActions: "📋 WHAT TO DO TODAY (ACTION PLAN)",
+        secMetrics: "🌱 CROP CONDITIONS",
+        secWeather: "🌦️ 48-HOUR WEATHER FORECAST",
+        secDevice: "🔋 DEVICE & BATTERY STATUS",
+        secChart: "24-HOUR DYNAMICS",
+        chartTitle: "Leaf Wetness vs Risk Threshold",
+        chartCritical: "● Critical: ≥10 hrs",
+        chartMax: "Max Recorded: 11.8 hrs",
+        chartSync: "Live Sync",
+        labelRain: "Rain (48h):",
+        labelRh: "High Humidity:",
+        labelBatt: "Battery:",
+        btnLearnMore: "Protocols ›",
+        titleLWD: "🍃 Leaf Wetness",
+        titleAir: "🌡️ Air Temp",
+        titleSoilM: "🌱 Soil Water",
+        titleSoilT: "☀️ Soil Temp",
+        unitHours: "hrs",
+        unitDays: "days",
+        nodeOnline: "Online",
+        solarCharging: "☀️ Solar Charging",
+        solarIdle: "Standby",
+        battRemaining: "Remaining autonomy:",
+        pillDetails: "Tap for details ›",
+        high: {
+          alertTitle: "HIGH RISK: DISEASE THREAT!",
+          alertDesc: "Leaves and soil are waterlogged. Late blight and bacterial wilt spread quickly. Act today!",
+          pillLB: "Late Blight: HIGH",
+          pillBW: "Bacterial Wilt: HIGH",
+          lwdBadge: "Critical",
+          lwdNote: "Foliage saturated",
+          airNote: "Cool & damp canopy air",
+          soilMBadge: "Waterlogged",
+          soilMNote: "Saturated root zone",
+          soilTBadge: "Warm",
+          soilTNote: "Optimal pathogen temp",
+          adv1Icon: "✂️",
+          adv1Title: "Prune Bottom Leaves",
+          adv1Desc: "Remove lower leaves near the soil to let wind pass through and dry the plant faster.",
+          adv2Icon: "🚫",
+          adv2Title: "Stop Watering Today",
+          adv2Desc: "Soil is already waterlogged (78%). Extra water accelerates root infection and bacterial wilt.",
+          adv3Icon: "💊",
+          adv3Title: "Spray Protective Fungicide",
+          adv3Desc: "Apply copper fungicide or biocontrol before rain starts to protect leaves.",
+          diTitle: "🚨 HIGH RISK: Disease Threat",
+          diSub: "Wet Leaves (11.8h) • Humidity 94%",
+          diBadge: "CRITICAL"
+        },
+        moderate: {
+          alertTitle: "CAUTION: LEAVES ARE DAMP",
+          alertDesc: "Cool and humid conditions. Fungus can develop if leaves remain wet for too long.",
+          pillLB: "Late Blight: Moderate",
+          pillBW: "Bacterial Wilt: Moderate",
+          lwdBadge: "Warning",
+          lwdNote: "Damp leaf surface",
+          airNote: "Cool canopy air",
+          soilMBadge: "Moist",
+          soilMNote: "Adequate root moisture",
+          soilTBadge: "Normal",
+          soilTNote: "Normal soil temp",
+          adv1Icon: "👀",
+          adv1Title: "Inspect Lower Leaves",
+          adv1Desc: "Check for dew or early spots. Clear weeds around rows for better air circulation.",
+          adv2Icon: "💧",
+          adv2Title: "Water Only in Early Morning",
+          adv2Desc: "Avoid evening irrigation so the soil surface can dry before nightfall.",
+          adv3Icon: "📦",
+          adv3Title: "Prepare Protective Spray",
+          adv3Desc: "Keep fungicides ready in case leaf wetness continues beyond 10 hours.",
+          diTitle: "⚠️ CAUTION: Leaves are Damp",
+          diSub: "Leaves 7.4h • Humidity 88%",
+          diBadge: "WARNING"
+        },
+        safe: {
+          alertTitle: "CROPS ARE SAFE",
+          alertDesc: "Weather is dry and sunny. Low risk of fungal or bacterial disease today.",
+          pillLB: "Late Blight: Safe",
+          pillBW: "Bacterial Wilt: Safe",
+          lwdBadge: "Optimal",
+          lwdNote: "Dry leaves",
+          airNote: "Optimal canopy climate",
+          soilMBadge: "Optimal",
+          soilMNote: "Good root moisture",
+          soilTBadge: "Normal",
+          soilTNote: "Normal soil temp",
+          adv1Icon: "🌾",
+          adv1Title: "Routine Field Scouting",
+          adv1Desc: "Walk the fields and monitor normal plant growth and vigor.",
+          adv2Icon: "💧",
+          adv2Title: "Normal Watering Schedule",
+          adv2Desc: "Proceed with standard watering when the topsoil feels dry.",
+          adv3Icon: "✅",
+          adv3Title: "No Chemical Spray Needed",
+          adv3Desc: "Microclimate is safe. No fungicide or bactericide application required today.",
+          diTitle: "🟢 OPTIMAL: Crops are Safe",
+          diSub: "Leaves Dry • Soil 52%",
+          diBadge: "NORMAL"
+        }
+      }
+    };
+
+    // --- Presentation Scenarios Raw Telemetry Data ---
     const scenarios = {
       high: {
-        alertTitle: "Late Blight Outbreak Imminent",
-        alertDesc: "Adapted Wallin SV reached 3 with 11.8h continuous leaf wetness. Soil bacterial multiplication index is high.",
         themeClass: "danger-theme",
-        pillLB: "Late Blight: HIGH (SV 3)",
-        pillBW: "Bacterial Wilt: HIGH (0.80)",
         lwd: 11.8,
         airTemp: 21.4,
         airRH: 94.2,
         soilT: 29.8,
         soilM: 78.4,
-        lwdBadge: "Critical",
-        lwdBadgeClass: "badge-critical",
-        diText: "🚨 SV=3 Outbreak Alert",
-        diSub: "LWD 11.8h • Humidity 94%",
-        diBadge: "CRITICAL",
-        adv1Title: "Immediate Canopy Aeration",
-        adv1Desc: "Initiate selective suckering and lower-leaf pruning across canopy foliage to promote laminar airflow and accelerate foliar drying.",
-        adv2Title: "Suspend Drip & Overhead Irrigation",
-        adv2Desc: "Soil volumetric moisture is at 78.4% (waterlogged). Halting irrigation prevents bacterial vascular mobility in the rhizosphere.",
-        adv3Title: "Preventive Bio-Fungicide Application",
-        adv3Desc: "Apply copper hydroxide or Bacillus subtilis protective barrier spray within 12 hours before initial hyphal penetration."
+        lwdBadgeClass: "badge-critical"
       },
       moderate: {
-        alertTitle: "Developing Microclimate Advisory",
-        alertDesc: "Leaf wetness duration is accumulating (7.4h). Ambient temperature (19.8°C) is highly favorable for zoosporangia germination.",
         themeClass: "warning-theme",
-        pillLB: "Late Blight: MODERATE (SV 1)",
-        pillBW: "Bacterial Wilt: MODERATE (0.60)",
         lwd: 7.4,
         airTemp: 19.8,
         airRH: 88.5,
         soilT: 26.5,
         soilM: 64.2,
-        lwdBadge: "Warning",
-        lwdBadgeClass: "badge-warning",
-        diText: "⚠️ Conducive Climate",
-        diSub: "LWD 7.4h • SV=1 Rising",
-        diBadge: "WARNING",
-        adv1Title: "Inspect Canopy Density",
-        adv1Desc: "Check lower plant tier for dew retention; clear inter-row weeds to facilitate natural cross-ventilation.",
-        adv2Title: "Regulate Irrigation Duration",
-        adv2Desc: "Switch to early morning drip cycles only to allow bed surface drying before evening dew point.",
-        adv3Title: "Prepare Protective Fungicides",
-        adv3Desc: "Stage preventive biological agents in case leaf wetness exceeds the 10-hour critical threshold."
+        lwdBadgeClass: "badge-warning"
       },
       safe: {
-        alertTitle: "Optimal Crop Microclimate",
-        alertDesc: "Foliar surfaces are dry. Soil moisture and root-zone temperatures are well within safe physiological parameters.",
         themeClass: "safe-theme",
-        pillLB: "Late Blight: LOW (SV 0)",
-        pillBW: "Bacterial Wilt: LOW (0.20)",
         lwd: 1.2,
         airTemp: 26.8,
         airRH: 64.0,
         soilT: 23.4,
         soilM: 52.0,
-        lwdBadge: "Optimal",
-        lwdBadgeClass: "badge-optimal",
-        diText: "🟢 All Systems Optimal",
-        diSub: "Leaves Dry • Soil 52%",
-        diBadge: "NORMAL",
-        adv1Title: "Routine Crop Scouting",
-        adv1Desc: "Maintain standard weekly visual inspection for insect vectors and physiological vigor.",
-        adv2Title: "Normal Balanced Irrigation",
-        adv2Desc: "Proceed with standard fertigation program at 50%–60% field capacity.",
-        adv3Title: "No Chemical Action Required",
-        adv3Desc: "Microclimate remains unfavorable for sporulation and bacterial proliferation."
+        lwdBadgeClass: "badge-optimal"
       }
     };
 
     let currentScenarioKey = 'high';
 
+    function toggleFarmerLanguage() {
+      currentFarmerLang = currentFarmerLang === 'tl' ? 'en' : 'tl';
+      localStorage.setItem('farmer_lang', currentFarmerLang);
+      applyLanguage();
+    }
+
+    function applyLanguage() {
+      const d = farmerDict[currentFarmerLang];
+      const langBtn = document.getElementById('langToggleBtn');
+      if (langBtn) langBtn.innerHTML = `<span>${d.langBtnText}</span>`;
+
+      const navDate = document.getElementById('navDateString');
+      if (navDate) navDate.innerText = d.navDate;
+
+      const cropPill = document.querySelector('.crop-pill');
+      if (cropPill) cropPill.innerText = d.targetCrop;
+
+      // Section titles
+      const sAct = document.getElementById('sectionActionTitle');
+      if (sAct) sAct.innerText = d.secActions;
+
+      const sMet = document.getElementById('sectionMetricsTitle');
+      if (sMet) sMet.innerText = d.secMetrics;
+
+      const sWea = document.getElementById('sectionWeatherTitle');
+      if (sWea) sWea.innerText = d.secWeather;
+
+      const sDev = document.getElementById('sectionDeviceTitle');
+      if (sDev) sDev.innerText = d.secDevice;
+
+      const sCh = document.getElementById('chartSectionTitle');
+      if (sCh) sCh.innerText = d.secChart;
+
+      const chM = document.getElementById('chartHeaderMetric');
+      if (chM) chM.innerText = d.chartTitle;
+
+      const chCrit = document.getElementById('chartFootCritical');
+      if (chCrit) chCrit.innerText = d.chartCritical;
+
+      const chMax = document.getElementById('chartFootMax');
+      if (chMax) chMax.innerText = d.chartMax;
+
+      const chSync = document.getElementById('chartFootSync');
+      if (chSync) chSync.innerText = d.chartSync;
+
+      const lRain = document.getElementById('labelRainProb');
+      if (lRain) {
+        const curProb = document.getElementById('mRainProb') ? document.getElementById('mRainProb').innerText : '--%';
+        lRain.innerHTML = `${d.labelRain} <strong id="mRainProb" style="color: var(--ios-blue);">${curProb}</strong>`;
+      }
+
+      const lRh = document.getElementById('labelHighRh');
+      if (lRh) {
+        const curRh = document.getElementById('mHighRhHours') ? document.getElementById('mHighRhHours').innerText : '--h';
+        lRh.innerHTML = `${d.labelRh} <strong id="mHighRhHours" style="color: var(--ios-orange);">${curRh}</strong>`;
+      }
+
+      const lBatt = document.getElementById('labelAutonomy');
+      if (lBatt) {
+        const curDays = document.getElementById('mAutonomyDays') ? document.getElementById('mAutonomyDays').innerText : '44.2d';
+        lBatt.innerHTML = `${d.labelBatt} <strong id="mAutonomyDays" style="color: var(--ios-green);">${curDays}</strong>`;
+      }
+
+      const pDet = document.getElementById('pillDetailsLink');
+      if (pDet) pDet.innerText = d.pillDetails;
+
+      const aMore = document.getElementById('actionLearnMore');
+      if (aMore) aMore.innerText = d.btnLearnMore;
+
+      // Metric Titles
+      const tLWD = document.getElementById('titleLWD');
+      if (tLWD) tLWD.innerText = d.titleLWD;
+      const tAir = document.getElementById('titleAir');
+      if (tAir) tAir.innerText = d.titleAir;
+      const tSM = document.getElementById('titleSoilM');
+      if (tSM) tSM.innerText = d.titleSoilM;
+      const tST = document.getElementById('titleSoilT');
+      if (tST) tST.innerText = d.titleSoilT;
+
+      // Tab bar labels
+      const tabT = document.getElementById('tabLabelToday');
+      if (tabT) tabT.innerText = d.tabToday;
+      const tabS = document.getElementById('tabLabelSensors');
+      if (tabS) tabS.innerText = d.tabSensors;
+      const tabR = document.getElementById('tabLabelRisk');
+      if (tabR) tabR.innerText = d.tabRisk;
+      const tabH = document.getElementById('tabLabelHardware');
+      if (tabH) tabH.innerText = d.tabHardware;
+      const tabF = document.getElementById('tabLabelField');
+      if (tabF) tabF.innerText = d.tabField;
+
+      // Re-apply scenario or live telemetry
+      if (liveModeActive && window.SolanaHardware && window.SolanaHardware.lastReading) {
+        updateWithLiveTelemetry(window.SolanaHardware.lastReading);
+      } else {
+        setScenario(currentScenarioKey);
+      }
+    }
+
     function setScenario(key) {
       currentScenarioKey = key;
-      const data = scenarios[key];
+      const dict = farmerDict[currentFarmerLang];
+      const sData = dict[key];
+      const rawData = scenarios[key];
 
       // Update Scenario Buttons UI
       document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
@@ -2453,50 +2802,80 @@
 
       // Update Hero Alert Card
       const hero = document.getElementById('heroAlertCard');
-      hero.className = `alert-banner-hero ${data.themeClass} clickable`;
-      document.getElementById('heroAlertTitle').innerText = data.alertTitle;
-      document.getElementById('heroAlertDesc').innerText = data.alertDesc;
-      document.getElementById('pillLateBlight').innerText = data.pillLB;
-      document.getElementById('pillBacterialWilt').innerText = data.pillBW;
+      hero.className = `alert-banner-hero ${rawData.themeClass} clickable`;
+      document.getElementById('heroAlertTitle').innerText = sData.alertTitle;
+      document.getElementById('heroAlertDesc').innerText = sData.alertDesc;
+      document.getElementById('pillLateBlight').innerText = sData.pillLB;
+      document.getElementById('pillBacterialWilt').innerText = sData.pillBW;
+
+      // Update Action Cards
+      const aI1 = document.getElementById('advIcon1');
+      if (aI1) aI1.innerText = sData.adv1Icon;
+      document.getElementById('advTitle1').innerText = sData.adv1Title;
+      document.getElementById('advDesc1').innerText = sData.adv1Desc;
+
+      const aI2 = document.getElementById('advIcon2');
+      if (aI2) aI2.innerText = sData.adv2Icon;
+      document.getElementById('advTitle2').innerText = sData.adv2Title;
+      document.getElementById('advDesc2').innerText = sData.adv2Desc;
+
+      const aI3 = document.getElementById('advIcon3');
+      if (aI3) aI3.innerText = sData.adv3Icon;
+      document.getElementById('advTitle3').innerText = sData.adv3Title;
+      document.getElementById('advDesc3').innerText = sData.adv3Desc;
 
       // Update Metric Tiles
-      document.getElementById('tileValLWD').innerHTML = `${data.lwd} <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">hrs</span>`;
-      document.getElementById('tileBadgeLWD').innerText = data.lwdBadge;
-      document.getElementById('tileBadgeLWD').className = `tile-badge-status ${data.lwdBadgeClass}`;
+      document.getElementById('tileValLWD').innerHTML = `${rawData.lwd} <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">${dict.unitHours}</span>`;
+      document.getElementById('tileBadgeLWD').innerText = sData.lwdBadge;
+      document.getElementById('tileBadgeLWD').className = `tile-badge-status ${rawData.lwdBadgeClass}`;
+      document.getElementById('tileNoteLWD').innerHTML = `<span style="color: ${key === 'high' ? 'var(--ios-red)' : key === 'moderate' ? 'var(--ios-orange)' : 'var(--ios-green)'};">●</span> ${sData.lwdNote}`;
 
-      document.getElementById('tileValAir').innerHTML = `${data.airTemp}<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span>`;
-      document.getElementById('tileBadgeAir').innerText = `${data.airRH}% RH`;
+      document.getElementById('tileValAir').innerHTML = `${rawData.airTemp}<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span>`;
+      document.getElementById('tileBadgeAir').innerText = `${rawData.airRH}% RH`;
+      document.getElementById('tileNoteAir').innerText = sData.airNote;
 
-      document.getElementById('tileValSoilM').innerHTML = `${data.soilM} <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">%</span>`;
-      document.getElementById('tileValSoilT').innerHTML = `${data.soilT}<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span>`;
+      document.getElementById('tileValSoilM').innerHTML = `${rawData.soilM} <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">%</span>`;
+      document.getElementById('tileBadgeSoilM').innerText = sData.soilMBadge;
+      document.getElementById('tileNoteSoilM').innerText = sData.soilMNote;
 
-      // Update Sensor Rows
-      document.getElementById('sensorRowLWD').innerText = `${data.lwd} hrs`;
-      document.getElementById('sensorRowAirT').innerText = `${data.airTemp}°C`;
-      document.getElementById('sensorRowAirRH').innerText = `${data.airRH}% RH`;
-      document.getElementById('sensorRowSoilT').innerText = `${data.soilT}°C`;
-      document.getElementById('sensorRowSoilM').innerText = `${data.soilM}% VWC`;
+      document.getElementById('tileValSoilT').innerHTML = `${rawData.soilT}<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span>`;
+      document.getElementById('tileBadgeSoilT').innerText = sData.soilTBadge;
+      document.getElementById('tileNoteSoilT').innerText = sData.soilTNote;
+
+      // Update Tab 2 Sensor Rows
+      const sL = document.getElementById('sensorRowLWD');
+      if (sL) sL.innerText = `${rawData.lwd} hrs`;
+      const sAT = document.getElementById('sensorRowAirT');
+      if (sAT) sAT.innerText = `${rawData.airTemp}°C`;
+      const sARH = document.getElementById('sensorRowAirRH');
+      if (sARH) sARH.innerText = `${rawData.airRH}% RH`;
+      const sST = document.getElementById('sensorRowSoilT');
+      if (sST) sST.innerText = `${rawData.soilT}°C`;
+      const sSM = document.getElementById('sensorRowSoilM');
+      if (sSM) sSM.innerText = `${rawData.soilM}% VWC`;
 
       // Update Dynamic Island
-      document.getElementById('diExpandedTitle').innerText = data.diText;
-      document.getElementById('diExpandedSub').innerText = data.diSub;
-      document.getElementById('diExpandedBadge').innerText = data.diBadge;
-      document.getElementById('diDot').style.background = key === 'high' ? 'var(--ios-red)' : key === 'moderate' ? 'var(--ios-orange)' : 'var(--ios-green)';
-      document.getElementById('diDot').style.boxShadow = `0 0 8px ${key === 'high' ? 'var(--ios-red)' : key === 'moderate' ? 'var(--ios-orange)' : 'var(--ios-green)'}`;
-
-      // Update Advisories
-      document.getElementById('advTitle1').innerText = data.adv1Title;
-      document.getElementById('advDesc1').innerText = data.adv1Desc;
-      document.getElementById('advTitle2').innerText = data.adv2Title;
-      document.getElementById('advDesc2').innerText = data.adv2Desc;
-      document.getElementById('advTitle3').innerText = data.adv3Title;
-      document.getElementById('advDesc3').innerText = data.adv3Desc;
+      const dTitle = document.getElementById('diExpandedTitle');
+      if (dTitle) dTitle.innerText = sData.diTitle;
+      const dSub = document.getElementById('diExpandedSub');
+      if (dSub) dSub.innerText = sData.diSub;
+      const dBadge = document.getElementById('diExpandedBadge');
+      if (dBadge) dBadge.innerText = sData.diBadge;
+      const dDot = document.getElementById('diDot');
+      if (dDot) {
+        dDot.style.background = key === 'high' ? 'var(--ios-red)' : key === 'moderate' ? 'var(--ios-orange)' : 'var(--ios-green)';
+        dDot.style.boxShadow = `0 0 8px ${dDot.style.background}`;
+      }
 
       // Update Risk Radar Models
-      document.getElementById('formulaLwdVal').innerText = `${data.lwd} hrs`;
-      document.getElementById('formulaTempVal').innerText = `${data.airTemp}°C`;
-      document.getElementById('formulaSoilTVal').innerText = `${data.soilT}°C`;
-      document.getElementById('formulaSoilMVal').innerText = `${data.soilM}%`;
+      const fL = document.getElementById('formulaLwdVal');
+      if (fL) fL.innerText = `${rawData.lwd} hrs`;
+      const fT = document.getElementById('formulaTempVal');
+      if (fT) fT.innerText = `${rawData.airTemp}°C`;
+      const fST = document.getElementById('formulaSoilTVal');
+      if (fST) fST.innerText = `${rawData.soilT}°C`;
+      const fSM = document.getElementById('formulaSoilMVal');
+      if (fSM) fSM.innerText = `${rawData.soilM}%`;
 
       // Re-draw Charts with new curve
       drawOverviewChart();
@@ -2531,51 +2910,63 @@
       const analysis = raw.disease_analysis || {};
       const lb = analysis.late_blight || { severity_value: 0, risk_level: 'LOW' };
       const bw = analysis.bacterial_wilt || { risk_score: 0.2, risk_level: 'LOW' };
-      const adv = analysis.advisory || {
-        status_tier: 'safe-theme',
-        badge_text: 'OPTIMAL CONDITIONS',
-        headline: 'Normal Microclimate',
-        description: 'Sensors active and within baseline.',
-        advisories: []
-      };
+      
+      const isHigh = lb.risk_level === 'HIGH' || bw.risk_level === 'HIGH';
+      const isMod = lb.risk_level === 'MODERATE' || bw.risk_level === 'MODERATE';
+      const key = isHigh ? 'high' : (isMod ? 'moderate' : 'safe');
+      const dict = farmerDict[currentFarmerLang];
+      const sData = dict[key];
 
       // Update Hero Alert Card
       const hero = document.getElementById('heroAlertCard');
       if (hero) {
-        hero.className = `alert-banner-hero ${adv.status_tier || 'safe-theme'} clickable`;
-        document.getElementById('heroAlertTitle').innerText = adv.headline || 'Sensor Telemetry Active';
-        document.getElementById('heroAlertDesc').innerText = adv.description || `Node ${raw.node_id || '01'} live stream`;
-        document.getElementById('pillLateBlight').innerText = `Late Blight: ${lb.risk_level} (SV ${lb.severity_value})`;
+        hero.className = `alert-banner-hero ${isHigh ? 'danger-theme' : isMod ? 'warning-theme' : 'safe-theme'} clickable`;
+        document.getElementById('heroAlertTitle').innerText = sData.alertTitle;
+        document.getElementById('heroAlertDesc').innerText = sData.alertDesc;
+        document.getElementById('pillLateBlight').innerText = `${currentFarmerLang === 'tl' ? 'Amag' : 'Late Blight'}: ${lb.risk_level} (SV ${lb.severity_value})`;
         document.getElementById('pillBacterialWilt').innerText = `Bacterial Wilt: ${bw.risk_level} (${typeof bw.risk_score === 'number' ? bw.risk_score.toFixed(2) : bw.risk_score})`;
       }
 
       // Update Metric Tiles
-      document.getElementById('tileValLWD').innerHTML = `${lwd} <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">hrs</span>`;
+      document.getElementById('tileValLWD').innerHTML = `${lwd} <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">${dict.unitHours}</span>`;
       const lwdBadge = document.getElementById('tileBadgeLWD');
       if (lwdBadge) {
-        lwdBadge.innerText = lb.risk_level === 'HIGH' ? 'Critical' : lb.risk_level === 'MODERATE' ? 'Warning' : 'Optimal';
-        lwdBadge.className = `tile-badge-status ${lb.risk_level === 'HIGH' ? 'badge-critical' : lb.risk_level === 'MODERATE' ? 'badge-warning' : 'badge-optimal'}`;
+        lwdBadge.innerText = sData.lwdBadge;
+        lwdBadge.className = `tile-badge-status ${isHigh ? 'badge-critical' : isMod ? 'badge-warning' : 'badge-optimal'}`;
       }
+      document.getElementById('tileNoteLWD').innerHTML = `<span style="color: ${isHigh ? 'var(--ios-red)' : isMod ? 'var(--ios-orange)' : 'var(--ios-green)'};">●</span> ${sData.lwdNote}`;
 
       document.getElementById('tileValAir').innerHTML = `${airT}<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span>`;
       document.getElementById('tileBadgeAir').innerText = `${airRH}% RH`;
-      document.getElementById('tileValSoilM').innerHTML = `${soilM} <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">%</span>`;
-      document.getElementById('tileValSoilT').innerHTML = `${soilT}<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span>`;
+      document.getElementById('tileNoteAir').innerText = sData.airNote;
 
-      // Update Sensor Rows
-      document.getElementById('sensorRowLWD').innerText = `${lwd} hrs`;
-      document.getElementById('sensorRowAirT').innerText = `${airT}°C`;
-      document.getElementById('sensorRowAirRH').innerText = `${airRH}% RH`;
-      document.getElementById('sensorRowSoilT').innerText = `${soilT}°C`;
-      document.getElementById('sensorRowSoilM').innerText = `${soilM}% VWC`;
+      document.getElementById('tileValSoilM').innerHTML = `${soilM} <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">%</span>`;
+      document.getElementById('tileBadgeSoilM').innerText = sData.soilMBadge;
+      document.getElementById('tileNoteSoilM').innerText = sData.soilMNote;
+
+      document.getElementById('tileValSoilT').innerHTML = `${soilT}<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span>`;
+      document.getElementById('tileBadgeSoilT').innerText = sData.soilTBadge;
+      document.getElementById('tileNoteSoilT').innerText = sData.soilTNote;
+
+      // Update Sensor Rows (Tab 2)
+      const sL = document.getElementById('sensorRowLWD');
+      if (sL) sL.innerText = `${lwd} hrs`;
+      const sAT = document.getElementById('sensorRowAirT');
+      if (sAT) sAT.innerText = `${airT}°C`;
+      const sARH = document.getElementById('sensorRowAirRH');
+      if (sARH) sARH.innerText = `${airRH}% RH`;
+      const sST = document.getElementById('sensorRowSoilT');
+      if (sST) sST.innerText = `${soilT}°C`;
+      const sSM = document.getElementById('sensorRowSoilM');
+      if (sSM) sSM.innerText = `${soilM}% VWC`;
 
       // Dynamic Island
       const diDot = document.getElementById('diDot');
       if (diDot) {
-        diDot.style.background = lb.risk_level === 'HIGH' || bw.risk_level === 'HIGH' ? 'var(--ios-red)' : lb.risk_level === 'MODERATE' || bw.risk_level === 'MODERATE' ? 'var(--ios-orange)' : 'var(--ios-green)';
+        diDot.style.background = isHigh ? 'var(--ios-red)' : isMod ? 'var(--ios-orange)' : 'var(--ios-green)';
         diDot.style.boxShadow = `0 0 8px ${diDot.style.background}`;
       }
-      document.getElementById('diExpandedTitle').innerText = adv.headline || 'Live Telemetry';
+      document.getElementById('diExpandedTitle').innerText = sData.diTitle;
       document.getElementById('diExpandedSub').innerText = `LWD ${lwd}h • Air ${airT}°C, ${airRH}% RH`;
       document.getElementById('diExpandedBadge').innerText = `SV = ${lb.severity_value}`;
       document.getElementById('diPillText').innerText = raw.node_id || 'Node 01';
@@ -2586,6 +2977,24 @@
         battFill.style.width = `${Math.min(100, Math.max(10, raw.battery_percent))}%`;
       }
 
+      // Autonomy and Power Diagnostics
+      const battPercent = parseInt(raw.battery_percent ?? 94);
+      const pwr = raw.power_diagnostics || {};
+      const autonomyDays = pwr.remaining_autonomy_days ?? ((battPercent / 100) * 47.0).toFixed(1);
+      const isCharging = pwr.is_solar_harvesting ?? (parseFloat(raw.solar_watts ?? 18.4) > 2.0);
+
+      const mAutonomy = document.getElementById('mAutonomyDays');
+      if (mAutonomy) mAutonomy.innerText = `${autonomyDays}d`;
+
+      const mBatt = document.getElementById('mDeviceBattTitle');
+      if (mBatt) mBatt.innerText = `${battPercent}% ${currentFarmerLang === 'tl' ? 'Baterya' : 'Battery'} (${(12.8 + (battPercent/100)*0.8).toFixed(1)}V)`;
+      const mBattSub = document.getElementById('mDeviceBattSub');
+      if (mBattSub) mBattSub.innerText = `${dict.battRemaining} ~${autonomyDays} ${dict.unitDays}`;
+      const mSolar = document.getElementById('mDeviceSolarStatus');
+      if (mSolar) mSolar.innerText = isCharging ? `☀️ +${parseFloat(raw.solar_watts ?? 18.4).toFixed(1)}W Solar` : `🌙 0W Solar`;
+      const mSolarSub = document.getElementById('mDeviceSolarSub');
+      if (mSolarSub) mSolarSub.innerText = isCharging ? dict.solarCharging : dict.solarIdle;
+
       // Formulas in Risk Radar
       document.getElementById('formulaLwdVal').innerText = `${lwd} hrs`;
       document.getElementById('formulaTempVal').innerText = `${airT}°C`;
@@ -2593,14 +3002,60 @@
       document.getElementById('formulaSoilMVal').innerText = `${soilM}%`;
 
       // Advisories
-      if (adv.advisories && adv.advisories.length >= 3) {
-        document.getElementById('advTitle1').innerText = adv.advisories[0].title;
-        document.getElementById('advDesc1').innerText = adv.advisories[0].desc;
-        document.getElementById('advTitle2').innerText = adv.advisories[1].title;
-        document.getElementById('advDesc2').innerText = adv.advisories[1].desc;
-        document.getElementById('advTitle3').innerText = adv.advisories[2].title;
-        document.getElementById('advDesc3').innerText = adv.advisories[2].desc;
+      const aI1 = document.getElementById('advIcon1');
+      if (aI1) aI1.innerText = sData.adv1Icon;
+      document.getElementById('advTitle1').innerText = sData.adv1Title;
+      document.getElementById('advDesc1').innerText = sData.adv1Desc;
+
+      const aI2 = document.getElementById('advIcon2');
+      if (aI2) aI2.innerText = sData.adv2Icon;
+      document.getElementById('advTitle2').innerText = sData.adv2Title;
+      document.getElementById('advDesc2').innerText = sData.adv2Desc;
+
+      const aI3 = document.getElementById('advIcon3');
+      if (aI3) aI3.innerText = sData.adv3Icon;
+      document.getElementById('advTitle3').innerText = sData.adv3Title;
+      document.getElementById('advDesc3').innerText = sData.adv3Desc;
+    }
+
+
+    // --- 48-Hour Weather Forecast Fusion (Open-Meteo API) ---
+    async function loadMobileForecast() {
+      if (!window.SolanaHardware) return;
+      const forecast = await window.SolanaHardware.fetchForecast();
+      if (!forecast || !forecast.forecast_summary) return;
+
+      const fs = forecast.forecast_summary;
+      const mBadge = document.getElementById('mForecastBadge');
+      if (mBadge) {
+        if (currentFarmerLang === 'tl') {
+          mBadge.innerText = fs.risk_level === 'HIGH' ? 'Mataas ang Banta' : fs.risk_level === 'MODERATE' ? 'Bantayan' : 'Ligtas';
+        } else {
+          mBadge.innerText = `${fs.risk_level} Risk`;
+        }
+        mBadge.className = `tile-badge-status ${fs.advisory_color === 'danger' ? 'badge-critical' : fs.advisory_color === 'warning' ? 'badge-warning' : 'badge-optimal'}`;
       }
+
+      const mText = document.getElementById('mForecastText');
+      if (mText) {
+        if (currentFarmerLang === 'tl') {
+          if (fs.risk_level === 'HIGH') {
+            mText.innerText = "Inaasahan ang malakas na ulan at mataas na alinsangan. Mag-spray ng pamprotektang gamot bago pumatak ang ulan bukas!";
+          } else if (fs.risk_level === 'MODERATE') {
+            mText.innerText = "May tsansa ng ulan at mahamog na gabi. Ihanda ang gamot pampigil sa amag.";
+          } else {
+            mText.innerText = "Maaliwalas at tuyo ang panahon sa susunod na 48 oras. Walang banta ng amag.";
+          }
+        } else {
+          mText.innerText = fs.advisory;
+        }
+      }
+
+      const mRain = document.getElementById('mRainProb');
+      if (mRain) mRain.innerText = `${fs.max_rain_probability_48h}%`;
+
+      const mRh = document.getElementById('mHighRhHours');
+      if (mRh) mRh.innerText = `${fs.projected_high_humidity_hours_48h}h`;
     }
 
     // Register with Hardware Bridge
@@ -2620,11 +3075,20 @@
 
     // --- Tab Switching Logic ---
     const tabTitles = {
-      overview: "SolanaWatch",
-      sensors: "Telemetry",
-      risk: "Risk Radar",
-      hardware: "Hardware Health",
-      field: "Field Plots"
+      tl: {
+        overview: "SolanaWatch",
+        sensors: "Mga Sukat",
+        risk: "Panganib sa Tanim",
+        hardware: "Kagamitan at Baterya",
+        field: "Bukid at Grupo"
+      },
+      en: {
+        overview: "SolanaWatch",
+        sensors: "Telemetry",
+        risk: "Risk Radar",
+        hardware: "Hardware Health",
+        field: "Field Plots"
+      }
     };
 
     function switchTab(tabId) {
@@ -2640,7 +3104,7 @@
       if (tabs[indexMap[tabId]]) tabs[indexMap[tabId]].classList.add('active');
 
       // Update Navigation Large Title
-      document.getElementById('pageMainTitle').innerText = tabTitles[tabId] || "SolanaWatch";
+      document.getElementById('pageMainTitle').innerText = (tabTitles[currentFarmerLang] && tabTitles[currentFarmerLang][tabId]) || "SolanaWatch";
 
       // Scroll Viewport to Top
       document.getElementById('contentViewport').scrollTop = 0;
@@ -2717,19 +3181,20 @@
       selectCrop(0);
 
       // Dynamically update advisories
-      if (currentScenarioKey === 'high') {
+      const sData = farmerDict[currentFarmerLang][currentScenarioKey];
+      if (sData) {
         const a1 = document.getElementById('advTitle1');
-        if (a1) a1.innerText = plot.adv1Title;
+        if (a1) a1.innerText = sData.adv1Title;
         const d1 = document.getElementById('advDesc1');
-        if (d1) d1.innerText = plot.adv1Desc;
+        if (d1) d1.innerText = sData.adv1Desc;
         const a2 = document.getElementById('advTitle2');
-        if (a2) a2.innerText = plot.adv2Title;
+        if (a2) a2.innerText = sData.adv2Title;
         const d2 = document.getElementById('advDesc2');
-        if (d2) d2.innerText = plot.adv2Desc;
+        if (d2) d2.innerText = sData.adv2Desc;
         const a3 = document.getElementById('advTitle3');
-        if (a3) a3.innerText = plot.adv3Title;
+        if (a3) a3.innerText = sData.adv3Title;
         const d3 = document.getElementById('advDesc3');
-        if (d3) d3.innerText = plot.adv3Desc;
+        if (d3) d3.innerText = sData.adv3Desc;
       }
     }
 
@@ -3009,9 +3474,10 @@
 
     // Window load initialization
     window.addEventListener('load', () => {
-      setScenario('high');
+      applyLanguage();
       drawOverviewChart();
       drawDetailedChart();
+      loadMobileForecast();
     });
 
     // Window resize chart recalculation
