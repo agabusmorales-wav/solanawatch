@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SolanaWatch — IoT Disease Early Warning System</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #070d1e;
+    --card-bg: rgba(14, 25, 48, 0.75);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --accent-teal: #00e5ff;
+    --accent-green: #10b981;
+    --accent-yellow: #f59e0b;
+    --accent-red: #ef4444;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+  }
+
+  /* Sidebar */
+  aside {
+    width: 260px;
+    background: rgba(10, 17, 34, 0.95);
+    border-right: 1px solid var(--card-border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 18px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 35px;
+    padding-left: 8px;
+  }
+  .brand-logo {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #00e5ff, #10b981);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #050b18;
+    font-weight: 800;
+    font-size: 20px;
+  }
+  .brand-text {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #ffffff, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  nav ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  nav li a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14.5px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  nav li.active a, nav li a:hover {
+    background: rgba(0, 229, 255, 0.1);
+    color: var(--accent-teal);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+  }
+
+  /* Main Container */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  /* Topbar */
+  header {
+    height: 75px;
+    border-bottom: 1px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 35px;
+    background: rgba(10, 17, 34, 0.6);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .farm-select-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .header-actions { display: flex; align-items: center; gap: 18px; }
+  .status-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: var(--accent-green);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent-green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* Content Body */
+  .dashboard-content {
+    padding: 30px 35px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  /* Simulation Controls Banner */
+  .simulation-bar {
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.3), rgba(15, 23, 42, 0.8));
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    border-radius: 16px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .sim-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--accent-teal);
+  }
+  .sim-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .sim-btn:hover { background: rgba(0, 229, 255, 0.2); border-color: var(--accent-teal); }
+  .sim-btn.active { background: var(--accent-teal); color: #050b18; font-weight: 700; }
+
+  /* Sensor Cards Grid */
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  .sensor-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 22px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .sensor-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(0, 229, 255, 0.3);
+  }
+  .gauge-circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 6px solid rgba(255, 255, 255, 0.08);
+    border-top-color: var(--accent-teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: border-top-color 0.3s;
+  }
+  .sensor-label { font-size: 14px; font-weight: 700; color: var(--text-muted); }
+  .sensor-sub { font-size: 12px; color: #64748b; margin-top: 4px; }
+
+  /* Disease Risk & Actions Grid */
+  .middle-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 24px;
+  }
+  .disease-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-head h2 { font-size: 18px; font-weight: 800; }
+
+  .disease-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s;
+  }
+  .disease-item.warning {
+    border-color: rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.08);
+  }
+  .disease-item.danger {
+    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.08);
+  }
+  .disease-item.safe {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.08);
+  }
+
+  .d-name { font-size: 15px; font-weight: 700; }
+  .d-sub { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+  .d-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .d-badge.yellow { background: var(--accent-yellow); color: #000; }
+  .d-badge.green { background: var(--accent-green); color: #000; }
+  .d-badge.red { background: var(--accent-red); color: #fff; }
+
+  /* Recommendations */
+  .rec-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .rec-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 4px solid var(--accent-teal);
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  .rec-item h4 { font-size: 14.5px; font-weight: 700; margin-bottom: 3px; }
+  .rec-item p { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+
+  /* Charts & Telemetry */
+  .chart-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .chart-wrapper {
+    position: relative;
+    height: 280px;
+    width: 100%;
+  }
+
+  /* Hardware Health Row */
+  .health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .health-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .health-val { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: var(--accent-teal); }
+
+  @media (max-width: 1024px) {
+    aside { display: none; }
+    .middle-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside>
+    <div class="brand">
+      <div class="brand-logo">🌿</div>
+      <div class="brand-text">SolanaWatch</div>
+    </div>
+    <nav>
+      <ul>
+        <li class="active"><a href="#">📊 Live Dashboard</a></li>
+        <li><a href="#">🔬 Disease Analytics</a></li>
+        <li><a href="#">🗺️ Field GIS Map</a></li>
+        <li><a href="#">⚡ Hardware Nodes</a></li>
+        <li><a href="#">📋 Agronomic Log</a></li>
+        <li><a href="#">⚙️ System Settings</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main View -->
+  <main>
+    <header>
+      <div class="farm-select-pill">
+        <span>📍 Benguet Highland Farm — Plot 01 (Solanaceae Crops)</span>
+        <span style="color:var(--accent-teal);">▾</span>
+      </div>
+      <div class="header-actions">
+        <div class="status-tag">
+          <div class="pulse-dot"></div>
+          Node #01 Active • 2.4GHz Wi-Fi
+        </div>
+      </div>
+    </header>
+
+    <div class="dashboard-content">
+
+      <!-- Interactive Simulation Control -->
+      <div class="simulation-bar">
+        <div class="sim-title">
+          <span>⚡ Live Scenario Simulation:</span>
+        </div>
+        <div class="sim-buttons">
+          <button class="sim-btn active" onclick="setScenario('normal')">⛅ Normal Baseline (Low Risk)</button>
+          <button class="sim-btn" onclick="setScenario('late_blight')">🌧️ High Humidity & Wet Canopy (Late Blight Alert)</button>
+          <button class="sim-btn" onclick="setScenario('bacterial_wilt')">🔥 Saturated Soil & High Temp (Bacterial Wilt Alert)</button>
+        </div>
+      </div>
+
+      <!-- Live Microclimate Gauges -->
+      <div class="sensor-grid">
+        <div class="sensor-card">
+          <div class="gauge-circle" id="g-soil-moist">68%</div>
+          <div class="sensor-label">Soil Moisture (VWC)</div>
+          <div class="sensor-sub">Capacitive @ 10cm depth</div>
+        </div>
+        <div class="sensor-card">
+          <div class="gauge-circle" id="g-soil-temp" style="border-top-color: #38bdf8;">24.2°C</div>
+          <div class="sensor-label">Soil Temperature</div>
+          <div class="sensor-sub">DS18B20 1-Wire Probe</div>
+        </div>
+        <div class="sensor-card">
+          <div class="gauge-circle" id="g-amb-temp" style="border-top-color: #f59e0b;">22.5°C</div>
+          <div class="sensor-label">Ambient Temperature</div>
+          <div class="sensor-sub">DHT22 inside Stevenson</div>
+        </div>
+        <div class="sensor-card">
+          <div class="gauge-circle" id="g-leaf-wet" style="border-top-color: #10b981;">4.2h</div>
+          <div class="sensor-label">Leaf Wetness Duration</div>
+          <div class="sensor-sub">RS485 Dielectric Grid</div>
+        </div>
+        <div class="sensor-card">
+          <div class="gauge-circle" id="g-rh" style="border-top-color: #a855f7;">88%</div>
+          <div class="sensor-label">Relative Humidity</div>
+          <div class="sensor-sub">DHT22 @ 1.5m Mast</div>
+        </div>
+      </div>
+
+      <!-- Disease Early Warning & Actions -->
+      <div class="middle-grid">
+        <div class="disease-card">
+          <div class="card-head">
+            <h2>⚠️ Early Warning Disease Risk Engine</h2>
+            <span style="font-size:12px; color:var(--text-muted);">Real-time Algorithmic Evaluation</span>
+          </div>
+
+          <div class="disease-item warning" id="late-blight-card">
+            <div>
+              <div class="d-name">Late Blight (Phytophthora infestans)</div>
+              <div class="d-sub" id="late-blight-sub">Wallin Severity Value: 2 (Moderate) • Cumulative LWD: 4.2h / 10h</div>
+            </div>
+            <div class="d-badge yellow" id="late-blight-badge">MODERATE</div>
+          </div>
+
+          <div class="disease-item safe" id="bacterial-wilt-card">
+            <div>
+              <div class="d-name">Bacterial Wilt (Ralstonia pseudosolanacearum)</div>
+              <div class="d-sub" id="bacterial-wilt-sub">Hydrothermal Score: 0.32 (Low) • Soil Temp 24.2°C, Moisture 68%</div>
+            </div>
+            <div class="d-badge green" id="bacterial-wilt-badge">LOW RISK</div>
+          </div>
+        </div>
+
+        <div class="rec-card">
+          <div class="card-head">
+            <h2>🌿 Contextual Agronomic Recommendations</h2>
+          </div>
+          <div class="rec-item" id="rec-item-1">
+            <h4 id="rec-h-1">Maintain Routine Canopy Scouting</h4>
+            <p id="rec-p-1">Relative humidity is approaching 90%. Prune lower dense foliage to increase air circulation across Solanaceae beds.</p>
+          </div>
+          <div class="rec-item" id="rec-item-2" style="border-left-color: var(--accent-green);">
+            <h4 id="rec-h-2">Irrigation Throttling Optimal</h4>
+            <p id="rec-p-2">Soil moisture is at optimal vegetative capacity (68% VWC). Suspend automated drip lines for 24 hours.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 24-Hour Telemetry Multi-Series Chart -->
+      <div class="chart-card">
+        <div class="card-head">
+          <h2>📈 24-Hour Microclimate Telemetry Trends</h2>
+          <span style="font-size:12px; color:var(--accent-teal);">Live Node #01 Sensor Stream</span>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="telemetryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Hardware Health Subsystem -->
+      <div class="health-grid">
+        <div class="health-item">
+          <div>
+            <div style="font-size:12px; color:var(--text-muted);">Solar PV Power</div>
+            <div class="health-val">18.4 W</div>
+          </div>
+          <span style="font-size:24px;">☀️</span>
+        </div>
+        <div class="health-item">
+          <div>
+            <div style="font-size:12px; color:var(--text-muted);">LiFePO4 Battery</div>
+            <div class="health-val">94% (13.2V)</div>
+          </div>
+          <span style="font-size:24px;">🔋</span>
+        </div>
+        <div class="health-item">
+          <div>
+            <div style="font-size:12px; color:var(--text-muted);">Autonomy Reserve</div>
+            <div class="health-val">47 Days</div>
+          </div>
+          <span style="font-size:24px;">⏱️</span>
+        </div>
+        <div class="health-item">
+          <div>
+            <div style="font-size:12px; color:var(--text-muted);">Wi-Fi Signal (RSSI)</div>
+            <div class="health-val">-62 dBm</div>
+          </div>
+          <span style="font-size:24px;">📶</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Initialize Chart.js
+    const ctx = document.getElementById('telemetryChart').getContext('2d');
+    const hours = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', 'Now'];
+    
+    let chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: hours,
+        datasets: [
+          {
+            label: 'Soil Moisture (% VWC)',
+            data: [65, 66, 67, 70, 69, 68, 68, 67, 68],
+            borderColor: '#00e5ff',
+            backgroundColor: 'rgba(0, 229, 255, 0.1)',
+            tension: 0.4,
+            borderWidth: 2
+          },
+          {
+            label: 'Ambient Temp (°C)',
+            data: [18, 17, 19, 23, 26, 25, 23, 21, 22.5],
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            tension: 0.4,
+            borderWidth: 2
+          },
+          {
+            label: 'Relative Humidity (%)',
+            data: [92, 94, 95, 82, 75, 78, 85, 89, 88],
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            tension: 0.4,
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans' } } }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }
+        }
+      }
+    });
+
+    // Scenario Switcher Function
+    function setScenario(type) {
+      document.querySelectorAll('.sim-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const gSoilMoist = document.getElementById('g-soil-moist');
+      const gSoilTemp = document.getElementById('g-soil-temp');
+      const gAmbTemp = document.getElementById('g-amb-temp');
+      const gLeafWet = document.getElementById('g-leaf-wet');
+      const gRH = document.getElementById('g-rh');
+
+      const lbCard = document.getElementById('late-blight-card');
+      const lbSub = document.getElementById('late-blight-sub');
+      const lbBadge = document.getElementById('late-blight-badge');
+
+      const bwCard = document.getElementById('bacterial-wilt-card');
+      const bwSub = document.getElementById('bacterial-wilt-sub');
+      const bwBadge = document.getElementById('bacterial-wilt-badge');
+
+      const recH1 = document.getElementById('rec-h-1');
+      const recP1 = document.getElementById('rec-p-1');
+      const recH2 = document.getElementById('rec-h-2');
+      const recP2 = document.getElementById('rec-p-2');
+
+      if (type === 'normal') {
+        gSoilMoist.textContent = '68%';
+        gSoilTemp.textContent = '24.2°C';
+        gAmbTemp.textContent = '22.5°C';
+        gLeafWet.textContent = '4.2h';
+        gRH.textContent = '88%';
+
+        lbCard.className = 'disease-item warning';
+        lbSub.textContent = 'Wallin Severity Value: 2 (Moderate) • Cumulative LWD: 4.2h / 10h';
+        lbBadge.className = 'd-badge yellow';
+        lbBadge.textContent = 'MODERATE';
+
+        bwCard.className = 'disease-item safe';
+        bwSub.textContent = 'Hydrothermal Score: 0.32 (Low) • Soil Temp 24.2°C, Moisture 68%';
+        bwBadge.className = 'd-badge green';
+        bwBadge.textContent = 'LOW RISK';
+
+        recH1.textContent = 'Maintain Routine Canopy Scouting';
+        recP1.textContent = 'Relative humidity is approaching 90%. Prune lower dense foliage to increase air circulation across Solanaceae beds.';
+        recH2.textContent = 'Irrigation Throttling Optimal';
+        recP2.textContent = 'Soil moisture is at optimal vegetative capacity (68% VWC). Suspend automated drip lines for 24 hours.';
+      } else if (type === 'late_blight') {
+        gSoilMoist.textContent = '74%';
+        gSoilTemp.textContent = '19.5°C';
+        gAmbTemp.textContent = '18.2°C';
+        gLeafWet.textContent = '11.8h';
+        gRH.textContent = '96%';
+
+        lbCard.className = 'disease-item danger';
+        lbSub.textContent = 'CRITICAL: Wallin Severity Value: 4 (High Risk) • LWD > 10h @ 18.2°C, RH 96%';
+        lbBadge.className = 'd-badge red';
+        lbBadge.textContent = 'HIGH ALERT';
+
+        bwCard.className = 'disease-item safe';
+        bwSub.textContent = 'Hydrothermal Score: 0.28 (Low) • Soil Temp 19.5°C below bacterial threshold';
+        bwBadge.className = 'd-badge green';
+        bwBadge.textContent = 'LOW RISK';
+
+        recH1.textContent = '🚨 IMMEDIATE LATE BLIGHT PREVENTIVE ACTION';
+        recP1.textContent = 'Critical foliar moisture threshold exceeded (11.8h leaf wetness). Apply certified copper-based or bio-fungicide spray immediately before lesion sporulation occurs.';
+        recH2.textContent = 'Maximize Canopy Aeration';
+        recP2.textContent = 'Open greenhouse side vents or install physical field wind deflectors to speed up foliar drying.';
+      } else if (type === 'bacterial_wilt') {
+        gSoilMoist.textContent = '84%';
+        gSoilTemp.textContent = '31.5°C';
+        gAmbTemp.textContent = '32.0°C';
+        gLeafWet.textContent = '1.0h';
+        gRH.textContent = '65%';
+
+        lbCard.className = 'disease-item safe';
+        lbSub.textContent = 'Wallin Severity Value: 0 (Low) • Foliage is dry (LWD 1.0h)';
+        lbBadge.className = 'd-badge green';
+        lbBadge.textContent = 'LOW RISK';
+
+        bwCard.className = 'disease-item danger';
+        bwSub.textContent = 'CRITICAL: Hydrothermal Score: 0.88 (High Risk) • Soil Temp 31.5°C & Saturated Soil (84% VWC)';
+        bwBadge.className = 'd-badge red';
+        bwBadge.textContent = 'HIGH ALERT';
+
+        recH1.textContent = '🚨 IMMEDIATE BACTERIAL WILT DRAINAGE ACTION';
+        recP1.textContent = 'High root-zone temperature (31.5°C) coupled with saturated soil (84% VWC) accelerates Ralstonia vascular infection. Open furrow drainage trenches immediately.';
+        recH2.textContent = 'Discontinue Surface Irrigation';
+        recP2.textContent = 'Halt all root-zone watering to prevent hydrostatic pathogen spread through contiguous soil beds.';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# Node & Dependencies
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# Vercel deployment cache
+.vercel
+
+# Local data & environment variables
+.env
+.env.local
+backend/data/*.json
+!backend/data/.gitkeep
+
+# Python cache & virtualenv
+__pycache__/
+*.py[cod]
+.venv/
+env/
+
+# Operating System files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE configuration
+.vscode/
+.idea/

@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/desktop.html", "destination": "/web-app/desktop.html" },
+    { "source": "/hardware-bridge.js", "destination": "/web-app/hardware-bridge.js" },
+    { "source": "/SolanaWatch_Web_Dashboard_Mockup.html", "destination": "/web-app/SolanaWatch_Web_Dashboard_Mockup.html" },
+    { "source": "/SolanaWatch_iOS_App.html", "destination": "/web-app/SolanaWatch_iOS_App.html" },
+    { "source": "/SolanaWatch_PC_Dashboard.html", "destination": "/web-app/SolanaWatch_PC_Dashboard.html" },
+    { "source": "/", "destination": "/web-app/index.html" },
+    { "source": "/(.*)", "destination": "/web-app/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS, PUT, DELETE" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With" }
+      ]
+    }
+  ]
+}

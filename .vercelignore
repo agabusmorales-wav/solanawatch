@@ -1,0 +1,13 @@
+# SolanaWatch: Vercel Ignored Assets
+# These folders are for local documentation, hardware firmware, and thesis paperwork.
+# Omitting them makes Vercel deploys 10x faster and keeps serverless function bundles tiny.
+
+paperwork/
+firmware/
+scripts/
+figures/
+.git/
+.gitignore
+*.bat
+README.md
+DEPLOYMENT_GUIDE_VERCEL.md

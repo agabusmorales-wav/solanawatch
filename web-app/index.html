@@ -1,0 +1,2971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>SolanaWatch — iOS Mobile Decision Support System</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SolanaWatch" />
+  <meta name="theme-color" content="#000000" />
+
+  <!-- Apple System Fonts & Inter Fallback -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- SolanaWatch Hardware & REST API Bridge -->
+  <script src="hardware-bridge.js"></script>
+
+  <style>
+    /* ==========================================================================
+       iOS HUMAN INTERFACE DESIGN SYSTEM (Apple HIG iOS 18 Tokens)
+       ========================================================================== */
+    :root {
+      /* Apple San Francisco Typography Stack */
+      --font-ios: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Helvetica Neue", "Plus Jakarta Sans", sans-serif;
+      --font-mono: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+      /* iOS Apple System Palette */
+      --ios-blue: #007AFF;
+      --ios-green: #34C759;
+      --ios-indigo: #5856D6;
+      --ios-orange: #FF9500;
+      --ios-pink: #FF2D55;
+      --ios-purple: #AF52DE;
+      --ios-red: #FF3B30;
+      --ios-teal: #30B0C7;
+      --ios-yellow: #FFCC00;
+      --ios-mint: #00C7BE;
+
+      /* Active Accent (Agricultural Apple Green) */
+      --accent-color: #34C759;
+      --accent-tint: rgba(52, 199, 89, 0.15);
+
+      /* Transition Spring Easing (Apple Standard) */
+      --ios-spring: cubic-bezier(0.25, 1, 0.5, 1);
+      --ios-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* iOS 18 Dark Mode Theme Defaults (System Backgrounds) */
+    body.ios-dark {
+      --bg-canvas: #09090b;
+      --bg-primary: #000000;
+      --bg-secondary: #1C1C1E;
+      --bg-tertiary: #2C2C2E;
+      --bg-grouped: #161618;
+      --bg-glass: rgba(28, 28, 30, 0.78);
+      --bg-glass-card: rgba(36, 36, 40, 0.72);
+      --bg-glass-elevated: rgba(44, 44, 48, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.10);
+      --border-card: rgba(255, 255, 255, 0.12);
+      --separator: rgba(84, 84, 88, 0.55);
+
+      --label-primary: #FFFFFF;
+      --label-secondary: rgba(235, 235, 245, 0.62);
+      --label-tertiary: rgba(235, 235, 245, 0.38);
+      --label-quaternary: rgba(235, 235, 245, 0.20);
+
+      --fill-primary: rgba(120, 120, 128, 0.32);
+      --fill-secondary: rgba(120, 120, 128, 0.24);
+      --fill-tertiary: rgba(118, 118, 128, 0.16);
+
+      --phone-chassis: linear-gradient(145deg, #2a2a2c, #1a1a1c);
+      --phone-rim: #3f3f44;
+      --phone-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.12);
+    }
+
+    /* iOS 18 Light Mode Theme */
+    body.ios-light {
+      --bg-canvas: #e8e8ed;
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F2F2F7;
+      --bg-tertiary: #E5E5EA;
+      --bg-grouped: #F2F2F7;
+      --bg-glass: rgba(255, 255, 255, 0.82);
+      --bg-glass-card: rgba(255, 255, 255, 0.85);
+      --bg-glass-elevated: rgba(255, 255, 255, 0.95);
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --border-card: rgba(0, 0, 0, 0.08);
+      --separator: rgba(60, 60, 67, 0.22);
+
+      --label-primary: #000000;
+      --label-secondary: rgba(60, 60, 67, 0.60);
+      --label-tertiary: rgba(60, 60, 67, 0.35);
+      --label-quaternary: rgba(60, 60, 67, 0.18);
+
+      --fill-primary: rgba(120, 120, 128, 0.18);
+      --fill-secondary: rgba(120, 120, 128, 0.12);
+      --fill-tertiary: rgba(118, 118, 128, 0.08);
+
+      --phone-chassis: linear-gradient(145deg, #dcdde2, #c8c9ce);
+      --phone-rim: #f3f3f6;
+      --phone-shadow: 0 25px 50px -15px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ==========================================================================
+       GLOBAL RESET & PRESENTATION WRAPPER
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: var(--font-ios);
+      background-color: var(--bg-canvas);
+      color: var(--label-primary);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Presentation Screen Shell */
+    .presentation-workspace {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 12px 40px;
+      gap: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    /* Top Presentation Floating Control Bar (For Oral Defense & Live Demo) */
+    .presenter-bar {
+      width: 100%;
+      max-width: 960px;
+      background: var(--bg-glass-elevated);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      z-index: 1000;
+      flex-wrap: wrap;
+    }
+
+    .presenter-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .presenter-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: -0.2px;
+      color: var(--label-primary);
+    }
+
+    .presenter-brand .leaf-badge {
+      width: 26px;
+      height: 26px;
+      background: linear-gradient(135deg, #34C759, #00C7BE);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .presenter-meta {
+      font-size: 12px;
+      color: var(--label-secondary);
+      border-left: 1px solid var(--separator);
+      padding-left: 12px;
+    }
+
+    .presenter-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .scenario-pill-group {
+      display: flex;
+      align-items: center;
+      background: var(--fill-tertiary);
+      border-radius: 12px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .scenario-btn {
+      border: none;
+      background: transparent;
+      padding: 5px 11px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-ios);
+      color: var(--label-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s var(--ios-spring);
+    }
+
+    .scenario-btn.active {
+      background: var(--bg-primary);
+      color: var(--label-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+
+    .scenario-btn.danger.active {
+      color: var(--ios-red);
+    }
+
+    .scenario-btn.warning.active {
+      color: var(--ios-orange);
+    }
+
+    .scenario-btn.safe.active {
+      color: var(--ios-green);
+    }
+
+    .scenario-btn.live {
+      border: 1px solid rgba(52, 199, 89, 0.4);
+      background: rgba(52, 199, 89, 0.08);
+      color: var(--ios-green);
+    }
+
+    .scenario-btn.live.active {
+      background: var(--ios-green);
+      color: #000000;
+      box-shadow: 0 0 12px rgba(52, 199, 89, 0.45);
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      display: inline-block;
+      animation: pulseLiveDot 1.6s infinite;
+    }
+
+    @keyframes pulseLiveDot {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(1.35); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .toolbar-icon-btn {
+      border: 1px solid var(--border-subtle);
+      background: var(--fill-tertiary);
+      color: var(--label-primary);
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .toolbar-icon-btn:hover {
+      background: var(--fill-secondary);
+      transform: scale(1.05);
+    }
+
+    /* ==========================================================================
+       IPHONE 16 PRO DEVICE CHASSIS (MOCKUP FRAME)
+       ========================================================================== */
+    .device-container {
+      position: relative;
+      transition: all 0.4s var(--ios-spring);
+    }
+
+    /* When in iPhone Frame Mode */
+    .device-container.frame-mode {
+      width: 416px;
+      height: 870px;
+      padding: 12px;
+      background: var(--phone-chassis);
+      border-radius: 56px;
+      box-shadow: var(--phone-shadow);
+      border: 3px solid var(--phone-rim);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* External physical side buttons on iPhone */
+    .device-container.frame-mode::before {
+      content: '';
+      position: absolute;
+      left: -5px;
+      top: 140px;
+      width: 4px;
+      height: 50px;
+      background: #4a4a50;
+      border-radius: 3px 0 0 3px;
+      box-shadow: -1px 0 2px rgba(0,0,0,0.5);
+    }
+    .device-container.frame-mode::after {
+      content: '';
+      position: absolute;
+      right: -5px;
+      top: 180px;
+      width: 4px;
+      height: 75px;
+      background: #4a4a50;
+      border-radius: 0 3px 3px 0;
+      box-shadow: 1px 0 2px rgba(0,0,0,0.5);
+    }
+
+    /* When in Responsive Full Screen Mode */
+    .device-container.full-mode {
+      width: 100%;
+      max-width: 460px;
+      height: 90vh;
+      min-height: 750px;
+      background: var(--bg-primary);
+      border-radius: 32px;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.2);
+      border: 1px solid var(--border-card);
+      overflow: hidden;
+    }
+
+    /* Inner Screen Frame */
+    .ios-screen {
+      width: 100%;
+      height: 100%;
+      background: var(--bg-grouped);
+      border-radius: 46px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      user-select: none;
+    }
+
+    .device-container.full-mode .ios-screen {
+      border-radius: 32px;
+    }
+
+    /* ==========================================================================
+       iOS STATUS BAR & DYNAMIC ISLAND
+       ========================================================================== */
+    .ios-status-bar {
+      height: 50px;
+      padding: 10px 24px 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 500;
+      background: transparent;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .status-time {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--label-primary);
+    }
+
+    /* Authentic Dynamic Island */
+    .dynamic-island {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 122px;
+      height: 33px;
+      background: #000000;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      z-index: 600;
+      cursor: pointer;
+      transition: all 0.35s var(--ios-bounce);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+      border: 0.5px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .dynamic-island:hover {
+      transform: translateX(-50%) scale(1.04);
+    }
+
+    .dynamic-island.expanded {
+      width: 320px;
+      height: 72px;
+      border-radius: 26px;
+      padding: 12px 16px;
+      top: 8px;
+    }
+
+    .di-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .di-camera {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #0d1117;
+      border: 1.5px solid #1c2128;
+      box-shadow: inset 0 0 2px #388bfd;
+    }
+
+    .di-sensor-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #34C759;
+    }
+
+    .di-pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #34C759;
+      box-shadow: 0 0 8px #34C759;
+      animation: diPulse 2s infinite;
+    }
+
+    @keyframes diPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .di-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .di-icon {
+      color: #fff;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Live Activity Expanded Content inside Dynamic Island */
+    .di-expanded-content {
+      display: none;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dynamic-island.expanded .di-compact-content {
+      display: none;
+    }
+
+    .dynamic-island.expanded .di-expanded-content {
+      display: flex;
+    }
+
+    .di-expanded-text h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .di-expanded-text p {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .di-expanded-badge {
+      background: rgba(52, 199, 89, 0.2);
+      border: 1px solid rgba(52, 199, 89, 0.4);
+      color: #34C759;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 12px;
+    }
+
+    /* Status Icons (Right Side) */
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--label-primary);
+    }
+
+    .battery-icon-pill {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .battery-housing {
+      width: 22px;
+      height: 11.5px;
+      border: 1.5px solid var(--label-primary);
+      border-radius: 3.5px;
+      padding: 1px;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .battery-housing::after {
+      content: '';
+      position: absolute;
+      right: -3px;
+      width: 1.5px;
+      height: 4px;
+      background: var(--label-primary);
+      border-radius: 0 1px 1px 0;
+    }
+
+    .battery-fill {
+      width: 90%;
+      height: 100%;
+      background: var(--label-primary);
+      border-radius: 1.5px;
+    }
+
+    /* ==========================================================================
+       iOS NAVIGATION BAR & HEADER
+       ========================================================================== */
+    .ios-nav-bar {
+      padding: 4px 20px 10px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      z-index: 100;
+    }
+
+    .nav-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-date-pill {
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--label-tertiary);
+    }
+
+    .nav-avatar-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--fill-primary);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--label-secondary);
+      transition: transform 0.2s;
+    }
+    .nav-avatar-btn:hover {
+      transform: scale(1.08);
+    }
+
+    .nav-large-title-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .nav-large-title {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.6px;
+      line-height: 1.15;
+      color: var(--label-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-node-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--fill-tertiary);
+      border: 0.5px solid var(--border-subtle);
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--label-secondary);
+      cursor: pointer;
+    }
+
+    /* iOS Segmented Control */
+    .ios-segmented-control {
+      background: var(--fill-secondary);
+      padding: 3px;
+      border-radius: 13px;
+      display: flex;
+      position: relative;
+      margin: 4px 0;
+    }
+
+    /* iOS Single Target Crop Bar */
+    .ios-single-label-bar {
+      background: var(--fill-secondary);
+      padding: 7px 12px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 4px 0;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .crop-pill {
+      color: var(--label-primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .edge-node-badge {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--label-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .segment-item {
+      flex: 1;
+      text-align: center;
+      padding: 5px 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--label-secondary);
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.25s var(--ios-spring);
+      position: relative;
+      z-index: 2;
+      white-space: nowrap;
+      border: none;
+      background: transparent;
+      font-family: var(--font-ios);
+    }
+
+    .segment-item.active {
+      background: var(--bg-primary);
+      color: var(--label-primary);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.05);
+    }
+
+    /* ==========================================================================
+       SCROLLABLE VIEW CONTAINER (IOS TABS)
+       ========================================================================== */
+    .ios-content-viewport {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0 16px 95px; /* bottom pad for iOS tab bar */
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Hide scrollbar for native app feel */
+    .ios-content-viewport::-webkit-scrollbar {
+      display: none;
+    }
+    .ios-content-viewport {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .tab-page {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      animation: iosFadeIn 0.3s var(--ios-spring);
+    }
+
+    .tab-page.active {
+      display: flex;
+    }
+
+    @keyframes iosFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       iOS GROUPED INSET CARDS & MODULES
+       ========================================================================== */
+    .ios-card {
+      background: var(--bg-glass-card);
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 0.5px solid var(--border-card);
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+      position: relative;
+      transition: transform 0.2s var(--ios-spring), box-shadow 0.2s var(--ios-spring);
+    }
+
+    .ios-card.clickable {
+      cursor: pointer;
+    }
+
+    .ios-card.clickable:active {
+      transform: scale(0.985);
+    }
+
+    .card-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .card-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--label-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-meta-action {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ios-blue);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    /* iOS Disease Outbreak Alert Banner (Hero Card) */
+    .alert-banner-hero {
+      border-radius: 22px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid transparent;
+      transition: all 0.3s var(--ios-spring);
+    }
+
+    .alert-banner-hero.danger-theme {
+      background: linear-gradient(135deg, rgba(255, 59, 48, 0.18), rgba(255, 59, 48, 0.06));
+      border-color: rgba(255, 59, 48, 0.35);
+    }
+
+    .alert-banner-hero.warning-theme {
+      background: linear-gradient(135deg, rgba(255, 149, 0, 0.18), rgba(255, 149, 0, 0.06));
+      border-color: rgba(255, 149, 0, 0.35);
+    }
+
+    .alert-banner-hero.safe-theme {
+      background: linear-gradient(135deg, rgba(52, 199, 89, 0.18), rgba(52, 199, 89, 0.06));
+      border-color: rgba(52, 199, 89, 0.35);
+    }
+
+    .alert-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .alert-glyph {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .danger-theme .alert-glyph {
+      background: var(--ios-red);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(255, 59, 48, 0.4);
+    }
+
+    .warning-theme .alert-glyph {
+      background: var(--ios-orange);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(255, 149, 0, 0.4);
+    }
+
+    .safe-theme .alert-glyph {
+      background: var(--ios-green);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(52, 199, 89, 0.4);
+    }
+
+    .alert-info-text h3 {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      line-height: 1.2;
+      color: var(--label-primary);
+    }
+
+    .alert-info-text p {
+      font-size: 13px;
+      color: var(--label-secondary);
+      margin-top: 3px;
+      line-height: 1.35;
+    }
+
+    .alert-pills-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .alert-pill {
+      background: var(--fill-secondary);
+      border: 0.5px solid var(--border-subtle);
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 10px;
+      color: var(--label-primary);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* 2x2 Weather / Microclimate Metric Grid */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .metric-tile {
+      background: var(--bg-glass-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 0.5px solid var(--border-card);
+      border-radius: 20px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 120px;
+      cursor: pointer;
+      transition: transform 0.2s var(--ios-spring);
+    }
+
+    .metric-tile:active {
+      transform: scale(0.97);
+    }
+
+    .tile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .tile-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--label-secondary);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .tile-icon-badge {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .tile-main-val {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--label-primary);
+      margin: 6px 0 2px;
+      font-family: var(--font-ios);
+    }
+
+    .tile-footer-note {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--label-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tile-badge-status {
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-critical {
+      background: rgba(255, 59, 48, 0.15);
+      color: var(--ios-red);
+    }
+
+    .badge-warning {
+      background: rgba(255, 149, 0, 0.15);
+      color: var(--ios-orange);
+    }
+
+    .badge-optimal {
+      background: rgba(52, 199, 89, 0.15);
+      color: var(--ios-green);
+    }
+
+    /* iOS Inset Grouped List (Like iOS Settings / Apple Health) */
+    .ios-inset-list {
+      background: var(--bg-glass-card);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 0.5px solid var(--border-card);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .inset-list-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      position: relative;
+      cursor: pointer;
+      gap: 12px;
+      transition: background-color 0.2s;
+    }
+
+    .inset-list-item:active {
+      background-color: var(--fill-tertiary);
+    }
+
+    .inset-list-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 56px;
+      right: 0;
+      height: 0.5px;
+      background: var(--separator);
+    }
+
+    .item-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .item-content-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .item-label {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: var(--label-primary);
+    }
+
+    .item-sublabel {
+      font-size: 12px;
+      color: var(--label-secondary);
+      margin-top: 1px;
+    }
+
+    .item-right-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .item-val-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--label-secondary);
+      font-family: var(--font-ios);
+    }
+
+    .item-chevron {
+      color: var(--label-tertiary);
+      display: flex;
+      align-items: center;
+    }
+
+    /* Apple Health Style Interactive Spline Chart Card */
+    .chart-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .chart-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chart-time-pills {
+      display: flex;
+      background: var(--fill-secondary);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .time-btn {
+      border: none;
+      background: transparent;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-ios);
+      color: var(--label-secondary);
+      cursor: pointer;
+    }
+
+    .time-btn.active {
+      background: var(--bg-primary);
+      color: var(--label-primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    .chart-canvas-container {
+      width: 100%;
+      height: 160px;
+      position: relative;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* Agronomic Advisory Action Items */
+    .advisory-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+    }
+
+    .advisory-item:not(:last-child) {
+      border-bottom: 0.5px solid var(--separator);
+    }
+
+    .advisory-step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--fill-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-color);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .advisory-text h5 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--label-primary);
+      line-height: 1.3;
+    }
+
+    .advisory-text p {
+      font-size: 12px;
+      color: var(--label-secondary);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    /* Pathogen Formula Cards */
+    .formula-math-box {
+      background: var(--fill-tertiary);
+      border: 0.5px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: var(--label-primary);
+      line-height: 1.5;
+    }
+
+    .formula-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+
+    /* ==========================================================================
+       AUTHENTIC iOS 18 TRANSLUCENT TAB BAR & HOME INDICATOR
+       ========================================================================== */
+    .ios-tab-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 84px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border-top: 0.5px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      z-index: 500;
+    }
+
+    .tab-items-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 6px 10px 0;
+    }
+
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--label-tertiary);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s var(--ios-spring);
+      position: relative;
+      padding: 4px 12px;
+    }
+
+    .tab-item:active {
+      transform: scale(0.92);
+    }
+
+    .tab-icon {
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+
+    .tab-title {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: -0.1px;
+      transition: color 0.2s;
+    }
+
+    .tab-item.active {
+      color: var(--accent-color);
+    }
+
+    .tab-item.active .tab-title {
+      font-weight: 700;
+    }
+
+    .tab-badge {
+      position: absolute;
+      top: 2px;
+      right: 14px;
+      min-width: 14px;
+      height: 14px;
+      border-radius: 7px;
+      background: var(--ios-red);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+    }
+
+    /* iOS Home Swipe Bar Indicator */
+    .ios-home-indicator {
+      width: 134px;
+      height: 5px;
+      background: var(--label-primary);
+      opacity: 0.85;
+      border-radius: 100px;
+      margin: 4px auto 8px;
+    }
+
+    /* ==========================================================================
+       AUTHENTIC iOS HALF-SHEET MODAL (Presentation Deep Dive)
+       ========================================================================== */
+    .ios-modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s var(--ios-spring);
+    }
+
+    .ios-modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .ios-bottom-sheet {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      max-height: 82%;
+      background: var(--bg-glass-elevated);
+      backdrop-filter: blur(35px) saturate(200%);
+      -webkit-backdrop-filter: blur(35px) saturate(200%);
+      border-radius: 32px 32px 0 0;
+      border-top: 0.5px solid var(--border-card);
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.35s var(--ios-bounce);
+      z-index: 800;
+      overflow: hidden;
+    }
+
+    .ios-modal-backdrop.open .ios-bottom-sheet {
+      transform: translateY(0);
+    }
+
+    .sheet-handle-bar {
+      width: 38px;
+      height: 5px;
+      border-radius: 100px;
+      background: var(--label-tertiary);
+      margin: 10px auto 4px;
+      cursor: pointer;
+    }
+
+    .sheet-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+    }
+
+    .sheet-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--label-primary);
+    }
+
+    .sheet-close-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--fill-primary);
+      border: none;
+      color: var(--label-secondary);
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .sheet-scroll-body {
+      padding: 10px 20px 30px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Modal Callout Details */
+    .sheet-callout-box {
+      background: var(--fill-secondary);
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--label-primary);
+    }
+  </style>
+</head>
+
+<body class="ios-dark">
+  <div class="presentation-workspace">
+
+    <!-- ==========================================================================
+         TOP PRESENTER TOOLBAR (Designed for Oral Defense & Slide Showcase)
+         ========================================================================== -->
+    <header class="presenter-bar">
+      <div class="presenter-left">
+        <div class="presenter-brand">
+          <div class="leaf-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A9.49 9.49 0 0 0 17 8m0 0a12.83 12.83 0 0 0-4-7.66C11 1.77 9 4.24 8 7c3 0 6 0 9 1Z" />
+            </svg>
+          </div>
+          <span>SolanaWatch</span>
+        </div>
+        <div class="presenter-meta">
+          <strong>UST CICS</strong> • 3ITC Group 1
+        </div>
+      </div>
+
+      <div class="presenter-actions">
+        <!-- Interactive Presentation Scenario & Hardware Switcher -->
+        <div class="scenario-pill-group">
+          <button class="scenario-btn live active" id="liveHwBtn" onclick="toggleLiveHardware()" title="Connect to Live ESP32 Hardware Telemetry">
+            <span class="live-dot" id="liveDot"></span> <span id="liveBtnText">Live Hardware</span>
+          </button>
+          <button class="scenario-btn danger" onclick="setScenario('high')" title="Simulate High Outbreak Condition">
+            <span>🚨</span> High Risk
+          </button>
+          <button class="scenario-btn warning" onclick="setScenario('moderate')" title="Simulate Developing Moderate Risk">
+            <span>⚠️</span> Moderate
+          </button>
+          <button class="scenario-btn safe" onclick="setScenario('safe')" title="Simulate Safe/Normal Conditions">
+            <span>🟢</span> Safe
+          </button>
+        </div>
+
+        <!-- Hardware Setup & Config Modal Button -->
+        <button class="toolbar-icon-btn" id="hwSettingsBtn" onclick="window.SolanaHardware.openModal()" style="width: auto; padding: 0 10px; gap: 5px; font-size: 12px; font-weight: 600;" title="Hardware Link & Node Configuration">
+          <span>📡</span> <span id="hwToolbarBadge">HW Link</span>
+        </button>
+
+        <!-- Frame Switcher: iPhone Frame vs Full Screen App -->
+        <button class="toolbar-icon-btn" id="frameToggleBtn" onclick="toggleDeviceFrame()" title="Toggle iPhone 16 Pro Frame or Full Screen">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="14" height="20" x="5" y="2" rx="3" />
+            <path d="M12 18h.01" />
+          </svg>
+        </button>
+
+        <!-- Appearance Switcher: iOS Dark vs iOS Light -->
+        <button class="toolbar-icon-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle iOS Dark / Light Mode">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+          </svg>
+        </button>
+
+        <!-- Switch to macOS / PC Desktop Dashboard -->
+        <a href="desktop.html" class="toolbar-icon-btn" style="text-decoration: none; width: auto; padding: 0 10px; gap: 5px; font-size: 12px; font-weight: 600;" title="Switch to PC / macOS Dashboard">
+          <span>🖥️</span> PC Version
+        </a>
+      </div>
+    </header>
+
+    <!-- ==========================================================================
+         IPHONE 16 PRO DEVICE CONTAINER
+         ========================================================================== -->
+    <div class="device-container frame-mode" id="deviceContainer">
+      <div class="ios-screen">
+
+        <!-- iOS STATUS BAR & INTERACTIVE DYNAMIC ISLAND -->
+        <div class="ios-status-bar">
+          <span class="status-time" id="currentTime">9:41</span>
+
+          <!-- Apple Dynamic Island (Interactive Tap to Expand) -->
+          <div class="dynamic-island" id="dynamicIsland" onclick="toggleDynamicIsland()">
+            <!-- Compact Island View -->
+            <div class="di-compact-content" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+              <div class="di-left">
+                <div class="di-pulse-dot" id="diDot"></div>
+                <div class="di-camera"></div>
+              </div>
+              <div class="di-right">
+                <span style="font-size: 10px; font-weight: 700; color: #fff;" id="diPillText">Node 01</span>
+                <span class="di-icon">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A9.49 9.49 0 0 0 17 8m0 0a12.83 12.83 0 0 0-4-7.66C11 1.77 9 4.24 8 7c3 0 6 0 9 1Z" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            <!-- Expanded Live Activity View -->
+            <div class="di-expanded-content">
+              <div class="di-expanded-text">
+                <h4 id="diExpandedTitle">🚨 High Late Blight Alert</h4>
+                <p id="diExpandedSub">Leaf Wetness 11.8h • Humidity 94%</p>
+              </div>
+              <div class="di-expanded-badge" id="diExpandedBadge">SV = 3</div>
+            </div>
+          </div>
+
+          <!-- Status Icons -->
+          <div class="status-icons">
+            <!-- Cellular signal bars -->
+            <svg width="15" height="12" viewBox="0 0 17 12" fill="currentColor">
+              <rect x="0" y="9" width="2.5" height="3" rx="0.8" />
+              <rect x="4" y="6.5" width="2.5" height="5.5" rx="0.8" />
+              <rect x="8" y="4" width="2.5" height="8" rx="0.8" />
+              <rect x="12" y="1" width="2.5" height="11" rx="0.8" />
+            </svg>
+            <!-- 5G / Wi-Fi -->
+            <svg width="15" height="12" viewBox="0 0 16 12" fill="currentColor">
+              <path d="M8 2.5a10.9 10.9 0 0 1 6.5 2.1.8.8 0 0 1 .1 1.1l-1 1.2a.7.7 0 0 1-1 .1 8.2 8.2 0 0 0-9.2 0 .7.7 0 0 1-1-.1l-1-1.2a.8.8 0 0 1 .1-1.1A10.9 10.9 0 0 1 8 2.5zm0 3.8a6.5 6.5 0 0 1 3.7 1.1.7.7 0 0 1 .1 1l-1 1.2a.6.6 0 0 1-.9.1 4.1 4.1 0 0 0-3.8 0 .6.6 0 0 1-.9-.1l-1-1.2a.7.7 0 0 1 .1-1A6.5 6.5 0 0 1 8 6.3zm0 3.7a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z" />
+            </svg>
+            <!-- Battery with fill -->
+            <div class="battery-icon-pill">
+              <div class="battery-housing">
+                <div class="battery-fill" id="batteryStatusFill"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- iOS NAVIGATION BAR (Large Title & Grouped Subtitle) -->
+        <div class="ios-nav-bar">
+          <div class="nav-top-row">
+            <span class="nav-date-pill" id="navDateString">THURSDAY, SEP 17 • BRGY. SAN JOSE</span>
+            <div class="nav-avatar-btn" onclick="switchTab('field')" title="View Field & Team">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="8" r="5" />
+                <path d="M20 21a8 8 0 1 0-16 0" />
+              </svg>
+            </div>
+          </div>
+
+          <div class="nav-large-title-row">
+            <h1 class="nav-large-title">
+              <span id="pageMainTitle">SolanaWatch</span>
+            </h1>
+            <div class="nav-node-badge" style="cursor: default;">
+              <span style="color: var(--apple-green);">●</span>
+              <span id="activePlotBadge">Solanaceae Crops</span>
+            </div>
+          </div>
+
+          <!-- iOS Single Target Crop Bar -->
+          <div class="ios-single-label-bar" id="plotSegmentControl">
+            <span class="crop-pill">🌱 Target: Solanaceae Crops</span>
+            <span class="edge-node-badge">ESP32 Node 01 • Active</span>
+          </div>
+        </div>
+
+        <!-- ==========================================================================
+             SCROLLABLE VIEWPORT FOR TABS
+             ========================================================================== -->
+        <main class="ios-content-viewport" id="contentViewport">
+
+          <!-- ----------------------------------------------------------------------
+               TAB 1: 🏠 OVERVIEW (TODAY)
+               ---------------------------------------------------------------------- -->
+          <section class="tab-page active" id="tab-overview">
+
+            <!-- Disease Outbreak Warning Hero Card -->
+            <div class="alert-banner-hero danger-theme clickable" id="heroAlertCard" onclick="openModal('disease')">
+              <div class="alert-top">
+                <div class="alert-glyph" id="alertGlyphIcon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V8h2v4z"/>
+                  </svg>
+                </div>
+                <div class="alert-info-text">
+                  <h3 id="heroAlertTitle">Late Blight Outbreak Imminent</h3>
+                  <p id="heroAlertDesc">Adapted Wallin SV reached 3 with 11.8h continuous leaf wetness. Soil bacterial multiplication index is high.</p>
+                </div>
+              </div>
+
+              <div class="alert-pills-row">
+                <div class="alert-pill">
+                  <span style="color: var(--ios-red);">●</span>
+                  <span id="pillLateBlight">Late Blight: HIGH (SV 3)</span>
+                </div>
+                <div class="alert-pill">
+                  <span style="color: var(--ios-orange);">●</span>
+                  <span id="pillBacterialWilt">Bacterial Wilt: HIGH (0.80)</span>
+                </div>
+                <div class="alert-pill" style="margin-left: auto; font-weight: 700; color: var(--ios-blue);">
+                  Tap for Action Plan ›
+                </div>
+              </div>
+            </div>
+
+            <!-- 2x2 Microclimate Modular Weather Tiles -->
+            <div class="card-section-title">
+              <span>CANOPY & ROOT-ZONE METRICS</span>
+            </div>
+
+            <div class="metric-grid">
+              <!-- Tile 1: Leaf Wetness -->
+              <div class="metric-tile" onclick="openModal('leaf')">
+                <div class="tile-header">
+                  <span class="tile-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                    </svg>
+                    Leaf Wetness
+                  </span>
+                  <span class="tile-badge-status badge-critical" id="tileBadgeLWD">Critical</span>
+                </div>
+                <div class="tile-main-val" id="tileValLWD">11.8 <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">hrs</span></div>
+                <div class="tile-footer-note" id="tileNoteLWD">
+                  <span style="color: var(--ios-red);">●</span> Saturated foliar layer (&ge;10h)
+                </div>
+              </div>
+
+              <!-- Tile 2: Ambient Air Temp & RH -->
+              <div class="metric-tile" onclick="openModal('ambient')">
+                <div class="tile-header">
+                  <span class="tile-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+                    </svg>
+                    Canopy Temp/RH
+                  </span>
+                  <span class="tile-badge-status badge-critical" id="tileBadgeAir">94% RH</span>
+                </div>
+                <div class="tile-main-val" id="tileValAir">21.4<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span></div>
+                <div class="tile-footer-note" id="tileNoteAir">
+                  Stevenson Screen (DHT22)
+                </div>
+              </div>
+
+              <!-- Tile 3: Soil Moisture -->
+              <div class="metric-tile" onclick="openModal('soil_moisture')">
+                <div class="tile-header">
+                  <span class="tile-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
+                    </svg>
+                    Soil Moisture
+                  </span>
+                  <span class="tile-badge-status badge-warning" id="tileBadgeSoilM">78% VWC</span>
+                </div>
+                <div class="tile-main-val" id="tileValSoilM">78.4 <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">%</span></div>
+                <div class="tile-footer-note" id="tileNoteSoilM">
+                  Waterlogged Root Pore Space
+                </div>
+              </div>
+
+              <!-- Tile 4: Soil Temperature -->
+              <div class="metric-tile" onclick="openModal('soil_temp')">
+                <div class="tile-header">
+                  <span class="tile-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M12 6v6l4 2"/>
+                    </svg>
+                    Soil Temp (10cm)
+                  </span>
+                  <span class="tile-badge-status badge-warning" id="tileBadgeSoilT">29.8°C</span>
+                </div>
+                <div class="tile-main-val" id="tileValSoilT">29.8<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span></div>
+                <div class="tile-footer-note" id="tileNoteSoilT">
+                  Optimal Pathogen Proliferation
+                </div>
+              </div>
+            </div>
+
+            <!-- Apple-Style Interactive 24-Hour Trend Chart -->
+            <div class="ios-card chart-card">
+              <div class="chart-top-bar">
+                <div>
+                  <div class="card-section-title">24-HOUR MICROCLIMATIC DYNAMICS</div>
+                  <div style="font-size: 17px; font-weight: 700; margin-top: 2px;" id="chartHeaderMetric">Leaf Wetness vs. Risk Threshold</div>
+                </div>
+                <div class="chart-time-pills">
+                  <button class="time-btn" onclick="updateChartTime('6H', this)">6H</button>
+                  <button class="time-btn active" onclick="updateChartTime('24H', this)">24H</button>
+                  <button class="time-btn" onclick="updateChartTime('7D', this)">7D</button>
+                </div>
+              </div>
+
+              <div class="chart-canvas-container">
+                <canvas id="overviewSparkCanvas"></canvas>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: var(--label-secondary); border-top: 0.5px solid var(--separator); padding-top: 8px;">
+                <span>● Critical SV3 Threshold: 10h</span>
+                <span>Max Recorded: 11.8h</span>
+                <span>Edge Sync: 2m ago</span>
+              </div>
+            </div>
+
+            <!-- Contextual Agronomic Recommendations Card -->
+            <div class="ios-card">
+              <div class="card-header-row">
+                <span class="card-section-title">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                  </svg>
+                  DECISION SUPPORT & ACTION PLAN
+                </span>
+                <span class="card-meta-action" onclick="openModal('protocol')">Protocols ›</span>
+              </div>
+
+              <div class="advisory-item">
+                <div class="advisory-step-num">1</div>
+                <div class="advisory-text">
+                  <h5 id="advTitle1">Immediate Canopy Aeration</h5>
+                  <p id="advDesc1">Initiate selective suckering and lower-leaf pruning across canopy foliage to promote laminar airflow and accelerate foliar drying.</p>
+                </div>
+              </div>
+
+              <div class="advisory-item">
+                <div class="advisory-step-num">2</div>
+                <div class="advisory-text">
+                  <h5 id="advTitle2">Suspend Drip & Overhead Irrigation</h5>
+                  <p id="advDesc2">Soil volumetric moisture is at 78.4% (waterlogged). Halting irrigation prevents bacterial vascular mobility in the rhizosphere.</p>
+                </div>
+              </div>
+
+              <div class="advisory-item">
+                <div class="advisory-step-num">3</div>
+                <div class="advisory-text">
+                  <h5 id="advTitle3">Preventive Bio-Fungicide Application</h5>
+                  <p id="advDesc3">Apply copper hydroxide or <em>Bacillus subtilis</em> protective barrier spray within 12 hours before initial hyphal penetration.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hardware Node Health Inset List -->
+            <div class="ios-inset-list">
+              <div class="inset-list-item" onclick="switchTab('hardware')">
+                <div class="item-icon-box" style="background: var(--ios-green);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="2" y="7" width="16" height="10" rx="2"/>
+                    <path d="M22 11v2"/>
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">ESP32 Sensing Node #1</div>
+                  <div class="item-sublabel">12.8V LiFePO4 • 47-Day Autonomy</div>
+                </div>
+                <div class="item-right-wrap">
+                  <span class="item-val-text" style="color: var(--ios-green);">94% • 13.3V</span>
+                  <div class="item-chevron">›</div>
+                </div>
+              </div>
+
+              <div class="inset-list-item" onclick="switchTab('hardware')">
+                <div class="item-icon-box" style="background: var(--ios-orange);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="4"/>
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">20W MPPT Solar Generation</div>
+                  <div class="item-sublabel">Net Positive Battery Replenishment</div>
+                </div>
+                <div class="item-right-wrap">
+                  <span class="item-val-text">+18.4 W</span>
+                  <div class="item-chevron">›</div>
+                </div>
+              </div>
+
+              <div class="inset-list-item" onclick="switchTab('hardware')">
+                <div class="item-icon-box" style="background: var(--ios-blue);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 3a9 9 0 0 0-9 9v7c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-7a9 9 0 0 0-9-9z"/>
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">MicroSD Buffer & Wi-Fi Link</div>
+                  <div class="item-sublabel">0 Unsynced Packets • RSSI -58 dBm</div>
+                </div>
+                <div class="item-right-wrap">
+                  <span class="item-val-text" style="color: var(--ios-blue);">Active</span>
+                  <div class="item-chevron">›</div>
+                </div>
+              </div>
+            </div>
+
+          </section>
+
+          <!-- ----------------------------------------------------------------------
+               TAB 2: 📊 SENSORS (TELEMETRY)
+               ---------------------------------------------------------------------- -->
+          <section class="tab-page" id="tab-sensors">
+
+            <div class="card-section-title">
+              <span>CANOPY & SUB-SURFACE PROBES</span>
+            </div>
+
+            <!-- Inset List of All 5 Physical Sensors -->
+            <div class="ios-inset-list">
+
+              <!-- Sensor 1: Dielectric Leaf Wetness -->
+              <div class="inset-list-item" onclick="openModal('leaf')">
+                <div class="item-icon-box" style="background: var(--ios-blue);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">Leaf Wetness Duration</div>
+                  <div class="item-sublabel">Industrial IP68 RS485 Modbus Grid</div>
+                </div>
+                <div class="item-right-wrap">
+                  <div style="text-align: right;">
+                    <div class="item-val-text" id="sensorRowLWD">11.8 hrs</div>
+                    <div style="font-size: 11px; color: var(--ios-red); font-weight: 700;">WET (Critical)</div>
+                  </div>
+                  <div class="item-chevron">›</div>
+                </div>
+              </div>
+
+              <!-- Sensor 2: Ambient Air Temperature -->
+              <div class="inset-list-item" onclick="openModal('ambient')">
+                <div class="item-icon-box" style="background: var(--ios-orange);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">Ambient Air Temperature</div>
+                  <div class="item-sublabel">DHT22 inside Stevenson Radiation Shield</div>
+                </div>
+                <div class="item-right-wrap">
+                  <div style="text-align: right;">
+                    <div class="item-val-text" id="sensorRowAirT">21.4°C</div>
+                    <div style="font-size: 11px; color: var(--ios-orange); font-weight: 600;">Optimal SV</div>
+                  </div>
+                  <div class="item-chevron">›</div>
+                </div>
+              </div>
+
+              <!-- Sensor 3: Relative Humidity -->
+              <div class="inset-list-item" onclick="openModal('ambient')">
+                <div class="item-icon-box" style="background: var(--ios-teal);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">Canopy Relative Humidity</div>
+                  <div class="item-sublabel">DHT22 Digital Humidity Sensor</div>
+                </div>
+                <div class="item-right-wrap">
+                  <div style="text-align: right;">
+                    <div class="item-val-text" id="sensorRowAirRH">94.2% RH</div>
+                    <div style="font-size: 11px; color: var(--ios-red); font-weight: 700;">Critical (&ge;90%)</div>
+                  </div>
+                  <div class="item-chevron">›</div>
+                </div>
+              </div>
+
+              <!-- Sensor 4: Soil Temperature -->
+              <div class="inset-list-item" onclick="openModal('soil_temp')">
+                <div class="item-icon-box" style="background: var(--ios-indigo);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">Subsurface Soil Temperature</div>
+                  <div class="item-sublabel">Dallas DS18B20 1-Wire Probe @ 10cm</div>
+                </div>
+                <div class="item-right-wrap">
+                  <div style="text-align: right;">
+                    <div class="item-val-text" id="sensorRowSoilT">29.8°C</div>
+                    <div style="font-size: 11px; color: var(--ios-orange); font-weight: 600;">Optimal Pathogen</div>
+                  </div>
+                  <div class="item-chevron">›</div>
+                </div>
+              </div>
+
+              <!-- Sensor 5: Capacitive Soil Moisture -->
+              <div class="inset-list-item" onclick="openModal('soil_moisture')">
+                <div class="item-icon-box" style="background: var(--ios-green);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">Volumetric Water Content</div>
+                  <div class="item-sublabel">Capacitive v1.2 Corrosion-Resistant ADC</div>
+                </div>
+                <div class="item-right-wrap">
+                  <div style="text-align: right;">
+                    <div class="item-val-text" id="sensorRowSoilM">78.4% VWC</div>
+                    <div style="font-size: 11px; color: var(--ios-red); font-weight: 700;">Saturated</div>
+                  </div>
+                  <div class="item-chevron">›</div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Detailed Multi-Parameter Time Series Comparison -->
+            <div class="ios-card chart-card">
+              <div class="chart-top-bar">
+                <div>
+                  <div class="card-section-title">CORRELATION TIME SERIES</div>
+                  <div style="font-size: 16px; font-weight: 700; margin-top: 2px;">Soil Moisture vs. Root Temperature</div>
+                </div>
+                <span class="card-meta-action" onclick="toggleSensorChartDataset()">Toggle View</span>
+              </div>
+              <div class="chart-canvas-container">
+                <canvas id="sensorDetailedCanvas"></canvas>
+              </div>
+              <div style="font-size: 12px; color: var(--label-secondary); line-height: 1.4;">
+                Hydrothermal concurrence: High soil moisture (&gt;75%) coincides with peak root-zone temperatures (28°C–35°C), precipitating high <em>R. solanacearum</em> proliferation.
+              </div>
+            </div>
+
+            <!-- Calibration & ISO Standard Card -->
+            <div class="ios-card">
+              <div class="card-section-title">SENSOR CALIBRATION & SPECIFICATIONS</div>
+              <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; color: var(--label-secondary);">
+                <div style="display: flex; justify-content: space-between;">
+                  <span>Sampling Frequency</span>
+                  <strong style="color: var(--label-primary);">Every 15 Minutes (96 cycles/day)</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>Stevenson Louvered Shield</span>
+                  <strong style="color: var(--label-primary);">WMO Standard Solar Protection</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>Soil Moisture Calibration</span>
+                  <strong style="color: var(--label-primary);">2-Point Gravimetric Linear Interpolation</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>RS485 Modbus Leaf Grid</span>
+                  <strong style="color: var(--label-primary);">9600 Baud • Half-Duplex MAX485</strong>
+                </div>
+              </div>
+            </div>
+
+          </section>
+
+          <!-- ----------------------------------------------------------------------
+               TAB 3: 🛡️ RISK ENGINE (PATHOLOGY)
+               ---------------------------------------------------------------------- -->
+          <section class="tab-page" id="tab-risk">
+
+            <div class="card-section-title">
+              <span>PLANT PATHOLOGY MATHEMATICAL MODELS</span>
+            </div>
+
+            <!-- Model 1: Late Blight (Wallin Severity Values) -->
+            <div class="ios-card clickable" onclick="openModal('late_blight_model')">
+              <div class="card-header-row">
+                <span class="card-section-title" style="color: var(--ios-red);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V8h2v4z"/>
+                  </svg>
+                  LATE BLIGHT (WALLIN SV MODEL)
+                </span>
+                <span class="tile-badge-status badge-critical" id="badgeModelLB">SV = 3 (High Alert)</span>
+              </div>
+
+              <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">
+                <em>Phytophthora infestans</em>
+              </h4>
+              <p style="font-size: 13px; color: var(--label-secondary); line-height: 1.4; margin-bottom: 12px;">
+                Oomycete foliar pathogen driven by prolonged free leaf moisture and cool-to-moderate ambient temperatures. Evaluated via adapted Wallin Severity Values.
+              </p>
+
+              <div class="formula-math-box">
+                IF (LWD &ge; 10h) AND (RH &ge; 90%) AND (12°C &le; Temp &le; 22°C)<br />
+                THEN Severity_Value = 3 &rarr; <span style="color: var(--ios-red); font-weight: 700;">[ HIGH RISK ALERT ]</span>
+              </div>
+
+              <div class="formula-badge-row">
+                <span style="font-size: 12px; color: var(--label-secondary);">Active LWD: <strong id="formulaLwdVal" style="color: var(--label-primary);">11.8 hrs</strong></span>
+                <span style="font-size: 12px; color: var(--label-secondary);">Active Temp: <strong id="formulaTempVal" style="color: var(--label-primary);">21.4°C</strong></span>
+                <span style="font-size: 12px; color: var(--ios-blue); font-weight: 600;">Details ›</span>
+              </div>
+            </div>
+
+            <!-- Model 2: Bacterial Wilt (Hydrothermal Risk Index) -->
+            <div class="ios-card clickable" onclick="openModal('bacterial_wilt_model')">
+              <div class="card-header-row">
+                <span class="card-section-title" style="color: var(--ios-orange);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="10"/>
+                  </svg>
+                  BACTERIAL WILT (HYDROTHERMAL INDEX)
+                </span>
+                <span class="tile-badge-status badge-warning" id="badgeModelBW">R_BW = 0.80 (High)</span>
+              </div>
+
+              <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">
+                <em>Ralstonia pseudosolanacearum</em>
+              </h4>
+              <p style="font-size: 13px; color: var(--label-secondary); line-height: 1.4; margin-bottom: 12px;">
+                Lethal soilborne vascular bacterium proliferating under saturated rhizosphere pore spaces and warm root temperatures (28°C–35°C).
+              </p>
+
+              <div class="formula-math-box">
+                R_BW = (0.50 &times; S_ST) + (0.50 &times; S_SM)<br />
+                Current: (0.50 &times; 1.0) + (0.50 &times; 1.0) = <span style="color: var(--ios-orange); font-weight: 700;">1.00 &ge; 0.70 [ HIGH ]</span>
+              </div>
+
+              <div class="formula-badge-row">
+                <span style="font-size: 12px; color: var(--label-secondary);">Soil Temp: <strong id="formulaSoilTVal" style="color: var(--label-primary);">29.8°C</strong></span>
+                <span style="font-size: 12px; color: var(--label-secondary);">Soil Moisture: <strong id="formulaSoilMVal" style="color: var(--label-primary);">78.4%</strong></span>
+                <span style="font-size: 12px; color: var(--ios-blue); font-weight: 600;">Details ›</span>
+              </div>
+            </div>
+
+            <!-- Pre-Symptomatic vs Post-Symptomatic Defense Value Proposition -->
+            <div class="ios-card">
+              <div class="card-section-title">THE SOLANAWATCH ADVANTAGE</div>
+              <h4 style="font-size: 16px; font-weight: 700; margin: 6px 0 10px;">
+                Pre-Symptomatic vs. Reactive Detection
+              </h4>
+              <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px; line-height: 1.4;">
+                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                  <div style="background: rgba(255, 59, 48, 0.15); color: var(--ios-red); padding: 4px 8px; border-radius: 8px; font-weight: 700; font-size: 11px;">POST-SYMPTOMATIC</div>
+                  <p style="color: var(--label-secondary);">Camera/Vision AI tools only alert farmers after visible leaf spots and vascular collapse have occurred. At that stage, up to 90% crop loss is unavoidable.</p>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                  <div style="background: rgba(52, 199, 89, 0.15); color: var(--ios-green); padding: 4px 8px; border-radius: 8px; font-weight: 700; font-size: 11px;">PRE-SYMPTOMATIC</div>
+                  <p style="color: var(--label-primary); font-weight: 500;">SolanaWatch monitors microclimatic favorability BEFORE infection, allowing farmers to aerate canopies and apply bio-fungicides to prevent spore penetration.</p>
+                </div>
+              </div>
+            </div>
+
+          </section>
+
+          <!-- ----------------------------------------------------------------------
+               TAB 4: ⚡ HARDWARE (NODE & POWER)
+               ---------------------------------------------------------------------- -->
+          <section class="tab-page" id="tab-hardware">
+
+            <div class="card-section-title">
+              <span>AUTONOMOUS FIELD NODE TELEMETRY</span>
+            </div>
+
+            <!-- Battery & Solar Autonomy Hero -->
+            <div class="ios-card">
+              <div class="card-header-row">
+                <span class="card-section-title">POWER SUBSYSTEM AUTONOMY</span>
+                <span class="tile-badge-status badge-optimal">47.0 Days Autonomy</span>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; margin: 10px 0;">
+                <div>
+                  <div style="font-size: 30px; font-weight: 800; letter-spacing: -0.5px; color: var(--label-primary);">
+                    94.2% <span style="font-size: 16px; font-weight: 600; color: var(--ios-green);">13.3 V</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--label-secondary); margin-top: 2px;">
+                    12.8V 12Ah (153.6 Wh) LiFePO4 with 15A BMS
+                  </div>
+                </div>
+
+                <div style="width: 58px; height: 58px; border-radius: 50%; border: 5px solid var(--fill-secondary); border-top-color: var(--ios-green); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;">
+                  94%
+                </div>
+              </div>
+
+              <!-- Power Budget Verification Breakdown -->
+              <div style="background: var(--fill-tertiary); border-radius: 14px; padding: 12px; margin-top: 6px; font-size: 12px; display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--label-secondary);">Daily Duty-Cycle Consumption:</span>
+                  <strong>2.30 Wh/day (96 cycles)</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--label-secondary);">Active Power (10s TX cycle):</span>
+                  <strong>1.188 W</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--label-secondary);">Deep-Sleep Power (890s ULP):</span>
+                  <strong>0.061 W</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--label-secondary);">20W PV Solar Daily Output:</span>
+                  <strong style="color: var(--ios-green);">67.5 Wh/day (29x surplus)</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edge Hardware Diagnostics Inset List -->
+            <div class="ios-inset-list">
+
+              <div class="inset-list-item" onclick="openModal('mcu_spec')">
+                <div class="item-icon-box" style="background: #3B82F6;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="4" y="4" width="16" height="16" rx="2"/>
+                    <path d="M9 9h6v6H9z"/>
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">ESP32 DevKit V1 Core</div>
+                  <div class="item-sublabel">Dual Xtensa LX6 @ 240MHz • FreeRTOS</div>
+                </div>
+                <div class="item-right-wrap">
+                  <span class="item-val-text">OK • 42°C</span>
+                  <div class="item-chevron">›</div>
+                </div>
+              </div>
+
+              <div class="inset-list-item" onclick="openModal('edge_sync')">
+                <div class="item-icon-box" style="background: #8B5CF6;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">MicroSD SPI Edge Buffer</div>
+                  <div class="item-sublabel">Offline FIFO: telemetry_buffer.jsonl</div>
+                </div>
+                <div class="item-right-wrap">
+                  <span class="item-val-text" style="color: var(--ios-green);">0 Pending</span>
+                  <div class="item-chevron">›</div>
+                </div>
+              </div>
+
+              <div class="inset-list-item">
+                <div class="item-icon-box" style="background: #EC4899;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/>
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">Wi-Fi Transceiver 2.4 GHz</div>
+                  <div class="item-sublabel">WPA2 Enterprise • HTTP POST JSON</div>
+                </div>
+                <div class="item-right-wrap">
+                  <span class="item-val-text">-58 dBm</span>
+                  <div class="item-chevron">›</div>
+                </div>
+              </div>
+
+              <div class="inset-list-item">
+                <div class="item-icon-box" style="background: #10B981;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">Enclosure Integrity</div>
+                  <div class="item-sublabel">IP65 Polycarbonate • PG7/PG9 Glands</div>
+                </div>
+                <div class="item-right-wrap">
+                  <span class="item-val-text" style="color: var(--ios-green);">Dry (22% RH)</span>
+                  <div class="item-chevron">›</div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Bill of Materials Summary -->
+            <div class="ios-card">
+              <div class="card-section-title">BILL OF MATERIALS (TOTAL: ₱7,208.00)</div>
+              <p style="font-size: 12.5px; color: var(--label-secondary); margin-top: 6px; line-height: 1.4;">
+                Complete custom-designed physical prototype fabricated using custom double-sided FR-4 PCB shields, eliminating loose jumper wire failures.
+              </p>
+            </div>
+
+          </section>
+
+          <!-- ----------------------------------------------------------------------
+               TAB 5: 🌿 FIELD & TEAM (UST CICS)
+               ---------------------------------------------------------------------- -->
+          <section class="tab-page" id="tab-field">
+
+            <div class="card-section-title">
+              <span>FIELD PLOT & CROP METADATA</span>
+            </div>
+
+            <!-- Active Plot Card -->
+            <div class="ios-card">
+              <div class="card-header-row">
+                <span class="card-section-title">CURRENT DEPLOYMENT</span>
+                <span class="tile-badge-status badge-optimal">Active Telemetry</span>
+              </div>
+
+              <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;" id="fieldPlotTitle">
+                Monitoring Plot — Solanaceae Crops
+              </h3>
+              <p style="font-size: 13px; color: var(--label-secondary); margin-bottom: 12px;">
+                <em>Solanaceae Family</em> • Open-Field & Screenhouse • Autonomous Sensing Node 01
+              </p>
+
+              <div class="ios-single-label-bar" style="margin-bottom: 10px;">
+                <span class="crop-pill">🌱 Classification: Solanaceae Crops</span>
+                <span class="edge-node-badge">Standard Profile</span>
+              </div>
+
+              <div style="font-size: 12.5px; color: var(--label-secondary); line-height: 1.45;" id="fieldCropDescription">
+                High-value staples in Philippine agriculture. The crops are characterized by susceptibility to microclimate-driven fungal pathogens (notably Late Blight during extended leaf wetness &ge;10h) and bacterial wilt (Ralstonia pseudosolanacearum under saturated soil moisture conditions).
+              </div>
+            </div>
+
+            <!-- Academic Capstone Information Inset List -->
+            <div class="card-section-title">
+              <span>PROJECT & DEFENSE DETAILS</span>
+            </div>
+
+            <div class="ios-inset-list">
+              <div class="inset-list-item">
+                <div class="item-icon-box" style="background: #F59E0B;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">University of Santo Tomas</div>
+                  <div class="item-sublabel">College of Information and Computing Sciences</div>
+                </div>
+              </div>
+
+              <div class="inset-list-item">
+                <div class="item-icon-box" style="background: #3B82F6;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="7" r="4"/>
+                    <path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">Adviser</div>
+                  <div class="item-sublabel">Prof. Eugenia R. Zhuo, DIT</div>
+                </div>
+              </div>
+
+              <div class="inset-list-item">
+                <div class="item-icon-box" style="background: #10B981;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">Panel of Examiners</div>
+                  <div class="item-sublabel">Inst. G.E. Montano • Prof. N.E. Estrella • Mr. K.A. Tino</div>
+                </div>
+              </div>
+
+              <div class="inset-list-item">
+                <div class="item-icon-box" style="background: #6366F1;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </div>
+                <div class="item-content-wrap">
+                  <div class="item-label">3ITC - Group 1 Researchers</div>
+                  <div class="item-sublabel">Morales • Rapada • Hernandez • Eugenio</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ISO 25010 Compliance Card -->
+            <div class="ios-card">
+              <div class="card-section-title">ISO/IEC 25010 SOFTWARE QUALITY</div>
+              <p style="font-size: 12.5px; color: var(--label-secondary); margin-top: 6px; line-height: 1.4;">
+                Evaluated against Functional Suitability, Reliability (47-day power autonomy), Performance Efficiency (15-min duty cycles), and Usability verified via System Usability Scale (SUS).
+              </p>
+            </div>
+
+          </section>
+
+        </main>
+
+        <!-- ==========================================================================
+             AUTHENTIC iOS BOTTOM TAB BAR & HOME INDICATOR
+             ========================================================================== -->
+        <nav class="ios-tab-bar">
+          <div class="tab-items-container">
+            <!-- Tab 1: Overview -->
+            <div class="tab-item active" onclick="switchTab('overview')">
+              <div class="tab-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+              </div>
+              <span class="tab-title">Today</span>
+              <div class="tab-badge" id="tabAlertBadge">!</div>
+            </div>
+
+            <!-- Tab 2: Sensors -->
+            <div class="tab-item" onclick="switchTab('sensors')">
+              <div class="tab-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 20V10M12 20V4M6 20v-6"/>
+                </svg>
+              </div>
+              <span class="tab-title">Sensors</span>
+            </div>
+
+            <!-- Tab 3: Risk Radar -->
+            <div class="tab-item" onclick="switchTab('risk')">
+              <div class="tab-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v6h-2V7zm0 8h2v2h-2v-2z"/>
+                </svg>
+              </div>
+              <span class="tab-title">Risk Radar</span>
+            </div>
+
+            <!-- Tab 4: Hardware -->
+            <div class="tab-item" onclick="switchTab('hardware')">
+              <div class="tab-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+              </div>
+              <span class="tab-title">Hardware</span>
+            </div>
+
+            <!-- Tab 5: Field -->
+            <div class="tab-item" onclick="switchTab('field')">
+              <div class="tab-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A9.49 9.49 0 0 0 17 8m0 0a12.83 12.83 0 0 0-4-7.66C11 1.77 9 4.24 8 7c3 0 6 0 9 1Z" />
+                </svg>
+              </div>
+              <span class="tab-title">Field</span>
+            </div>
+          </div>
+
+          <!-- iOS Swipe Bar (Home Indicator) -->
+          <div class="ios-home-indicator"></div>
+        </nav>
+
+        <!-- ==========================================================================
+             AUTHENTIC iOS BOTTOM SHEET MODAL
+             ========================================================================== -->
+        <div class="ios-modal-backdrop" id="modalBackdrop" onclick="closeModal(event)">
+          <div class="ios-bottom-sheet" id="bottomSheet" onclick="event.stopPropagation()">
+            <div class="sheet-handle-bar" onclick="closeModalDirect()"></div>
+            <div class="sheet-header-row">
+              <h3 class="sheet-title" id="sheetTitle">Sensor Diagnostics</h3>
+              <button class="sheet-close-btn" onclick="closeModalDirect()">✕</button>
+            </div>
+
+            <div class="sheet-scroll-body" id="sheetBody">
+              <!-- Dynamically Populated Content -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==========================================================================
+       JAVASCRIPT LOGIC: PRESENTATION CONTROLS, iOS MICRO-INTERACTIONS & CHARTS
+       ========================================================================== -->
+  <script>
+    // --- Clock Simulation ---
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      hours = hours % 12 || 12;
+      document.getElementById('currentTime').innerText = `${hours}:${minutes}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // --- Presentation Scenarios State Data ---
+    const scenarios = {
+      high: {
+        alertTitle: "Late Blight Outbreak Imminent",
+        alertDesc: "Adapted Wallin SV reached 3 with 11.8h continuous leaf wetness. Soil bacterial multiplication index is high.",
+        themeClass: "danger-theme",
+        pillLB: "Late Blight: HIGH (SV 3)",
+        pillBW: "Bacterial Wilt: HIGH (0.80)",
+        lwd: 11.8,
+        airTemp: 21.4,
+        airRH: 94.2,
+        soilT: 29.8,
+        soilM: 78.4,
+        lwdBadge: "Critical",
+        lwdBadgeClass: "badge-critical",
+        diText: "🚨 SV=3 Outbreak Alert",
+        diSub: "LWD 11.8h • Humidity 94%",
+        diBadge: "CRITICAL",
+        adv1Title: "Immediate Canopy Aeration",
+        adv1Desc: "Initiate selective suckering and lower-leaf pruning across canopy foliage to promote laminar airflow and accelerate foliar drying.",
+        adv2Title: "Suspend Drip & Overhead Irrigation",
+        adv2Desc: "Soil volumetric moisture is at 78.4% (waterlogged). Halting irrigation prevents bacterial vascular mobility in the rhizosphere.",
+        adv3Title: "Preventive Bio-Fungicide Application",
+        adv3Desc: "Apply copper hydroxide or Bacillus subtilis protective barrier spray within 12 hours before initial hyphal penetration."
+      },
+      moderate: {
+        alertTitle: "Developing Microclimate Advisory",
+        alertDesc: "Leaf wetness duration is accumulating (7.4h). Ambient temperature (19.8°C) is highly favorable for zoosporangia germination.",
+        themeClass: "warning-theme",
+        pillLB: "Late Blight: MODERATE (SV 1)",
+        pillBW: "Bacterial Wilt: MODERATE (0.60)",
+        lwd: 7.4,
+        airTemp: 19.8,
+        airRH: 88.5,
+        soilT: 26.5,
+        soilM: 64.2,
+        lwdBadge: "Warning",
+        lwdBadgeClass: "badge-warning",
+        diText: "⚠️ Conducive Climate",
+        diSub: "LWD 7.4h • SV=1 Rising",
+        diBadge: "WARNING",
+        adv1Title: "Inspect Canopy Density",
+        adv1Desc: "Check lower plant tier for dew retention; clear inter-row weeds to facilitate natural cross-ventilation.",
+        adv2Title: "Regulate Irrigation Duration",
+        adv2Desc: "Switch to early morning drip cycles only to allow bed surface drying before evening dew point.",
+        adv3Title: "Prepare Protective Fungicides",
+        adv3Desc: "Stage preventive biological agents in case leaf wetness exceeds the 10-hour critical threshold."
+      },
+      safe: {
+        alertTitle: "Optimal Crop Microclimate",
+        alertDesc: "Foliar surfaces are dry. Soil moisture and root-zone temperatures are well within safe physiological parameters.",
+        themeClass: "safe-theme",
+        pillLB: "Late Blight: LOW (SV 0)",
+        pillBW: "Bacterial Wilt: LOW (0.20)",
+        lwd: 1.2,
+        airTemp: 26.8,
+        airRH: 64.0,
+        soilT: 23.4,
+        soilM: 52.0,
+        lwdBadge: "Optimal",
+        lwdBadgeClass: "badge-optimal",
+        diText: "🟢 All Systems Optimal",
+        diSub: "Leaves Dry • Soil 52%",
+        diBadge: "NORMAL",
+        adv1Title: "Routine Crop Scouting",
+        adv1Desc: "Maintain standard weekly visual inspection for insect vectors and physiological vigor.",
+        adv2Title: "Normal Balanced Irrigation",
+        adv2Desc: "Proceed with standard fertigation program at 50%–60% field capacity.",
+        adv3Title: "No Chemical Action Required",
+        adv3Desc: "Microclimate remains unfavorable for sporulation and bacterial proliferation."
+      }
+    };
+
+    let currentScenarioKey = 'high';
+
+    function setScenario(key) {
+      currentScenarioKey = key;
+      const data = scenarios[key];
+
+      // Update Scenario Buttons UI
+      document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.querySelector(`.scenario-btn.${key === 'high' ? 'danger' : key === 'moderate' ? 'warning' : 'safe'}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      // Update Hero Alert Card
+      const hero = document.getElementById('heroAlertCard');
+      hero.className = `alert-banner-hero ${data.themeClass} clickable`;
+      document.getElementById('heroAlertTitle').innerText = data.alertTitle;
+      document.getElementById('heroAlertDesc').innerText = data.alertDesc;
+      document.getElementById('pillLateBlight').innerText = data.pillLB;
+      document.getElementById('pillBacterialWilt').innerText = data.pillBW;
+
+      // Update Metric Tiles
+      document.getElementById('tileValLWD').innerHTML = `${data.lwd} <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">hrs</span>`;
+      document.getElementById('tileBadgeLWD').innerText = data.lwdBadge;
+      document.getElementById('tileBadgeLWD').className = `tile-badge-status ${data.lwdBadgeClass}`;
+
+      document.getElementById('tileValAir').innerHTML = `${data.airTemp}<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span>`;
+      document.getElementById('tileBadgeAir').innerText = `${data.airRH}% RH`;
+
+      document.getElementById('tileValSoilM').innerHTML = `${data.soilM} <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">%</span>`;
+      document.getElementById('tileValSoilT').innerHTML = `${data.soilT}<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span>`;
+
+      // Update Sensor Rows
+      document.getElementById('sensorRowLWD').innerText = `${data.lwd} hrs`;
+      document.getElementById('sensorRowAirT').innerText = `${data.airTemp}°C`;
+      document.getElementById('sensorRowAirRH').innerText = `${data.airRH}% RH`;
+      document.getElementById('sensorRowSoilT').innerText = `${data.soilT}°C`;
+      document.getElementById('sensorRowSoilM').innerText = `${data.soilM}% VWC`;
+
+      // Update Dynamic Island
+      document.getElementById('diExpandedTitle').innerText = data.diText;
+      document.getElementById('diExpandedSub').innerText = data.diSub;
+      document.getElementById('diExpandedBadge').innerText = data.diBadge;
+      document.getElementById('diDot').style.background = key === 'high' ? 'var(--ios-red)' : key === 'moderate' ? 'var(--ios-orange)' : 'var(--ios-green)';
+      document.getElementById('diDot').style.boxShadow = `0 0 8px ${key === 'high' ? 'var(--ios-red)' : key === 'moderate' ? 'var(--ios-orange)' : 'var(--ios-green)'}`;
+
+      // Update Advisories
+      document.getElementById('advTitle1').innerText = data.adv1Title;
+      document.getElementById('advDesc1').innerText = data.adv1Desc;
+      document.getElementById('advTitle2').innerText = data.adv2Title;
+      document.getElementById('advDesc2').innerText = data.adv2Desc;
+      document.getElementById('advTitle3').innerText = data.adv3Title;
+      document.getElementById('advDesc3').innerText = data.adv3Desc;
+
+      // Update Risk Radar Models
+      document.getElementById('formulaLwdVal').innerText = `${data.lwd} hrs`;
+      document.getElementById('formulaTempVal').innerText = `${data.airTemp}°C`;
+      document.getElementById('formulaSoilTVal').innerText = `${data.soilT}°C`;
+      document.getElementById('formulaSoilMVal').innerText = `${data.soilM}%`;
+
+      // Re-draw Charts with new curve
+      drawOverviewChart();
+      drawDetailedChart();
+    }
+
+    // --- Live Hardware Connection & Telemetry Ingestion ---
+    let liveModeActive = true;
+
+    function toggleLiveHardware() {
+      if (window.SolanaHardware) {
+        liveModeActive = window.SolanaHardware.toggleLive();
+        if (liveModeActive) {
+          document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
+          const liveBtn = document.getElementById('liveHwBtn');
+          if (liveBtn) liveBtn.classList.add('active');
+        } else {
+          setScenario(currentScenarioKey);
+        }
+      }
+    }
+
+    function updateWithLiveTelemetry(raw) {
+      if (!liveModeActive) return;
+
+      const airT = parseFloat(raw.air_temperature ?? 24.0).toFixed(1);
+      const airRH = parseFloat(raw.relative_humidity ?? 70.0).toFixed(1);
+      const soilT = parseFloat(raw.soil_temperature ?? 25.0).toFixed(1);
+      const soilM = parseFloat(raw.soil_moisture ?? 55.0).toFixed(1);
+      const lwd = parseFloat(raw.leaf_wetness_hours ?? 0.0).toFixed(1);
+      
+      const analysis = raw.disease_analysis || {};
+      const lb = analysis.late_blight || { severity_value: 0, risk_level: 'LOW' };
+      const bw = analysis.bacterial_wilt || { risk_score: 0.2, risk_level: 'LOW' };
+      const adv = analysis.advisory || {
+        status_tier: 'safe-theme',
+        badge_text: 'OPTIMAL CONDITIONS',
+        headline: 'Normal Microclimate',
+        description: 'Sensors active and within baseline.',
+        advisories: []
+      };
+
+      // Update Hero Alert Card
+      const hero = document.getElementById('heroAlertCard');
+      if (hero) {
+        hero.className = `alert-banner-hero ${adv.status_tier || 'safe-theme'} clickable`;
+        document.getElementById('heroAlertTitle').innerText = adv.headline || 'Sensor Telemetry Active';
+        document.getElementById('heroAlertDesc').innerText = adv.description || `Node ${raw.node_id || '01'} live stream`;
+        document.getElementById('pillLateBlight').innerText = `Late Blight: ${lb.risk_level} (SV ${lb.severity_value})`;
+        document.getElementById('pillBacterialWilt').innerText = `Bacterial Wilt: ${bw.risk_level} (${typeof bw.risk_score === 'number' ? bw.risk_score.toFixed(2) : bw.risk_score})`;
+      }
+
+      // Update Metric Tiles
+      document.getElementById('tileValLWD').innerHTML = `${lwd} <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">hrs</span>`;
+      const lwdBadge = document.getElementById('tileBadgeLWD');
+      if (lwdBadge) {
+        lwdBadge.innerText = lb.risk_level === 'HIGH' ? 'Critical' : lb.risk_level === 'MODERATE' ? 'Warning' : 'Optimal';
+        lwdBadge.className = `tile-badge-status ${lb.risk_level === 'HIGH' ? 'badge-critical' : lb.risk_level === 'MODERATE' ? 'badge-warning' : 'badge-optimal'}`;
+      }
+
+      document.getElementById('tileValAir').innerHTML = `${airT}<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span>`;
+      document.getElementById('tileBadgeAir').innerText = `${airRH}% RH`;
+      document.getElementById('tileValSoilM').innerHTML = `${soilM} <span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">%</span>`;
+      document.getElementById('tileValSoilT').innerHTML = `${soilT}<span style="font-size: 14px; font-weight: 500; color: var(--label-secondary);">°C</span>`;
+
+      // Update Sensor Rows
+      document.getElementById('sensorRowLWD').innerText = `${lwd} hrs`;
+      document.getElementById('sensorRowAirT').innerText = `${airT}°C`;
+      document.getElementById('sensorRowAirRH').innerText = `${airRH}% RH`;
+      document.getElementById('sensorRowSoilT').innerText = `${soilT}°C`;
+      document.getElementById('sensorRowSoilM').innerText = `${soilM}% VWC`;
+
+      // Dynamic Island
+      const diDot = document.getElementById('diDot');
+      if (diDot) {
+        diDot.style.background = lb.risk_level === 'HIGH' || bw.risk_level === 'HIGH' ? 'var(--ios-red)' : lb.risk_level === 'MODERATE' || bw.risk_level === 'MODERATE' ? 'var(--ios-orange)' : 'var(--ios-green)';
+        diDot.style.boxShadow = `0 0 8px ${diDot.style.background}`;
+      }
+      document.getElementById('diExpandedTitle').innerText = adv.headline || 'Live Telemetry';
+      document.getElementById('diExpandedSub').innerText = `LWD ${lwd}h • Air ${airT}°C, ${airRH}% RH`;
+      document.getElementById('diExpandedBadge').innerText = `SV = ${lb.severity_value}`;
+      document.getElementById('diPillText').innerText = raw.node_id || 'Node 01';
+
+      // Battery & Hardware Indicators
+      const battFill = document.getElementById('batteryStatusFill');
+      if (battFill && raw.battery_percent) {
+        battFill.style.width = `${Math.min(100, Math.max(10, raw.battery_percent))}%`;
+      }
+
+      // Formulas in Risk Radar
+      document.getElementById('formulaLwdVal').innerText = `${lwd} hrs`;
+      document.getElementById('formulaTempVal').innerText = `${airT}°C`;
+      document.getElementById('formulaSoilTVal').innerText = `${soilT}°C`;
+      document.getElementById('formulaSoilMVal').innerText = `${soilM}%`;
+
+      // Advisories
+      if (adv.advisories && adv.advisories.length >= 3) {
+        document.getElementById('advTitle1').innerText = adv.advisories[0].title;
+        document.getElementById('advDesc1').innerText = adv.advisories[0].desc;
+        document.getElementById('advTitle2').innerText = adv.advisories[1].title;
+        document.getElementById('advDesc2').innerText = adv.advisories[1].desc;
+        document.getElementById('advTitle3').innerText = adv.advisories[2].title;
+        document.getElementById('advDesc3').innerText = adv.advisories[2].desc;
+      }
+    }
+
+    // Register with Hardware Bridge
+    if (window.SolanaHardware) {
+      window.SolanaHardware.onTelemetry((record) => {
+        updateWithLiveTelemetry(record);
+      });
+      window.SolanaHardware.onStatusChange((status) => {
+        if (status === 'connected') {
+          liveModeActive = true;
+          document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
+          const liveBtn = document.getElementById('liveHwBtn');
+          if (liveBtn) liveBtn.classList.add('active');
+        }
+      });
+    }
+
+    // --- Tab Switching Logic ---
+    const tabTitles = {
+      overview: "SolanaWatch",
+      sensors: "Telemetry",
+      risk: "Risk Radar",
+      hardware: "Hardware Health",
+      field: "Field Plots"
+    };
+
+    function switchTab(tabId) {
+      // Set Active Tab in Viewport
+      document.querySelectorAll('.tab-page').forEach(page => page.classList.remove('active'));
+      const targetPage = document.getElementById(`tab-${tabId}`);
+      if (targetPage) targetPage.classList.add('active');
+
+      // Set Active Tab Bar Icon
+      document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
+      const indexMap = { overview: 0, sensors: 1, risk: 2, hardware: 3, field: 4 };
+      const tabs = document.querySelectorAll('.tab-item');
+      if (tabs[indexMap[tabId]]) tabs[indexMap[tabId]].classList.add('active');
+
+      // Update Navigation Large Title
+      document.getElementById('pageMainTitle').innerText = tabTitles[tabId] || "SolanaWatch";
+
+      // Scroll Viewport to Top
+      document.getElementById('contentViewport').scrollTop = 0;
+
+      // Re-render chart if switching to charts
+      setTimeout(() => {
+        if (tabId === 'overview') drawOverviewChart();
+        if (tabId === 'sensors') drawDetailedChart();
+      }, 50);
+    }
+
+    // --- Dynamic Island Expansion ---
+    function toggleDynamicIsland() {
+      const di = document.getElementById('dynamicIsland');
+      di.classList.toggle('expanded');
+    }
+
+    // --- Device Frame vs Full Screen Mode ---
+    function toggleDeviceFrame() {
+      const container = document.getElementById('deviceContainer');
+      container.classList.toggle('frame-mode');
+      container.classList.toggle('full-mode');
+      setTimeout(() => {
+        drawOverviewChart();
+        drawDetailedChart();
+      }, 300);
+    }
+
+    // --- Light vs Dark Theme ---
+    function toggleTheme() {
+      const body = document.body;
+      if (body.classList.contains('ios-dark')) {
+        body.classList.remove('ios-dark');
+        body.classList.add('ios-light');
+      } else {
+        body.classList.remove('ios-light');
+        body.classList.add('ios-dark');
+      }
+      setTimeout(() => {
+        drawOverviewChart();
+        drawDetailedChart();
+      }, 100);
+    }
+
+    // --- Solanaceae Crop Plot Configuration ---
+    const plots = [
+      {
+        name: "Solanaceae Crops",
+        crop: "Solanaceae Crops",
+        desc: "Solanaceae Family • Open-Field & Screenhouse • Autonomous Sensing Node 01",
+        adv1Title: "Immediate Canopy Aeration",
+        adv1Desc: "Initiate selective suckering and lower-leaf pruning across canopy foliage to promote laminar airflow and accelerate foliar drying.",
+        adv2Title: "Suspend Drip & Overhead Irrigation",
+        adv2Desc: "Soil volumetric moisture is at 78.4% (waterlogged). Halting irrigation prevents bacterial vascular mobility in the rhizosphere.",
+        adv3Title: "Preventive Bio-Fungicide Application",
+        adv3Desc: "Apply copper hydroxide or Bacillus subtilis protective barrier spray within 12 hours before initial hyphal penetration."
+      }
+    ];
+    let currentPlotIndex = 0;
+
+    function cyclePlot() {
+      selectSubPlot(0);
+    }
+
+    function selectSubPlot(index = 0) {
+      currentPlotIndex = 0;
+      const plot = plots[0];
+      const badge = document.getElementById('activePlotBadge');
+      if (badge) badge.innerText = plot.name;
+      const plotTitleEl = document.getElementById('fieldPlotTitle');
+      if (plotTitleEl) plotTitleEl.innerText = "Monitoring Plot — " + plot.name;
+
+      // Update Tab 5 Field description
+      selectCrop(0);
+
+      // Dynamically update advisories
+      if (currentScenarioKey === 'high') {
+        const a1 = document.getElementById('advTitle1');
+        if (a1) a1.innerText = plot.adv1Title;
+        const d1 = document.getElementById('advDesc1');
+        if (d1) d1.innerText = plot.adv1Desc;
+        const a2 = document.getElementById('advTitle2');
+        if (a2) a2.innerText = plot.adv2Title;
+        const d2 = document.getElementById('advDesc2');
+        if (d2) d2.innerText = plot.adv2Desc;
+        const a3 = document.getElementById('advTitle3');
+        if (a3) a3.innerText = plot.adv3Title;
+        const d3 = document.getElementById('advDesc3');
+        if (d3) d3.innerText = plot.adv3Desc;
+      }
+    }
+
+    function selectCrop(index = 0) {
+      const descEl = document.getElementById('fieldCropDescription');
+      if (descEl) {
+        descEl.innerText = "High-value staples in Philippine agriculture. The crops are characterized by susceptibility to microclimate-driven fungal pathogens (notably Late Blight during extended leaf wetness >=10h) and bacterial wilt (Ralstonia pseudosolanacearum under saturated soil moisture conditions).";
+      }
+    }
+
+    // --- Canvas Spline Chart Drawing (Ultra Clean Apple-Style) ---
+    function drawSpline(canvasId, points, strokeColor, gradientStart, gradientEnd, thresholdY = null) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const w = rect.width;
+      const h = rect.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      if (points.length < 2) return;
+
+      const minVal = Math.min(...points) * 0.85;
+      const maxVal = Math.max(...points) * 1.15 || 1;
+
+      const coords = points.map((val, i) => {
+        const x = (i / (points.length - 1)) * (w - 20) + 10;
+        const y = h - ((val - minVal) / (maxVal - minVal)) * (h - 35) - 15;
+        return { x, y };
+      });
+
+      // Threshold line
+      if (thresholdY !== null) {
+        const threshCoordY = h - ((thresholdY - minVal) / (maxVal - minVal)) * (h - 35) - 15;
+        ctx.beginPath();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = "rgba(255, 59, 48, 0.6)";
+        ctx.lineWidth = 1.2;
+        ctx.moveTo(10, threshCoordY);
+        ctx.lineTo(w - 10, threshCoordY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Draw Gradient Area
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, gradientStart);
+      grad.addColorStop(1, gradientEnd);
+
+      ctx.beginPath();
+      ctx.moveTo(coords[0].x, coords[0].y);
+      for (let i = 0; i < coords.length - 1; i++) {
+        const xc = (coords[i].x + coords[i + 1].x) / 2;
+        const yc = (coords[i].y + coords[i + 1].y) / 2;
+        ctx.quadraticCurveTo(coords[i].x, coords[i].y, xc, yc);
+      }
+      ctx.quadraticCurveTo(
+        coords[coords.length - 1].x,
+        coords[coords.length - 1].y,
+        coords[coords.length - 1].x,
+        coords[coords.length - 1].y
+      );
+      ctx.lineTo(coords[coords.length - 1].x, h);
+      ctx.lineTo(coords[0].x, h);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Draw Spline Stroke
+      ctx.beginPath();
+      ctx.moveTo(coords[0].x, coords[0].y);
+      for (let i = 0; i < coords.length - 1; i++) {
+        const xc = (coords[i].x + coords[i + 1].x) / 2;
+        const yc = (coords[i].y + coords[i + 1].y) / 2;
+        ctx.quadraticCurveTo(coords[i].x, coords[i].y, xc, yc);
+      }
+      ctx.quadraticCurveTo(
+        coords[coords.length - 1].x,
+        coords[coords.length - 1].y,
+        coords[coords.length - 1].x,
+        coords[coords.length - 1].y
+      );
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Highlight Last Point
+      const last = coords[coords.length - 1];
+      ctx.beginPath();
+      ctx.arc(last.x, last.y, 4, 0, 2 * Math.PI);
+      ctx.fillStyle = strokeColor;
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
+    }
+
+    function drawOverviewChart() {
+      const isHigh = currentScenarioKey === 'high';
+      const isMod = currentScenarioKey === 'moderate';
+
+      const points = isHigh
+        ? [1.2, 2.0, 3.5, 4.8, 6.2, 8.0, 9.5, 10.2, 11.0, 11.8]
+        : isMod
+        ? [0.5, 1.0, 1.8, 2.6, 3.5, 4.8, 5.7, 6.4, 7.0, 7.4]
+        : [0.2, 0.4, 0.6, 0.8, 1.0, 1.1, 1.2, 1.0, 0.8, 0.5];
+
+      const stroke = isHigh ? "#FF3B30" : isMod ? "#FF9500" : "#34C759";
+      const gStart = isHigh ? "rgba(255, 59, 48, 0.35)" : isMod ? "rgba(255, 149, 0, 0.35)" : "rgba(52, 199, 89, 0.35)";
+      const gEnd = "rgba(0, 0, 0, 0.0)";
+
+      drawSpline("overviewSparkCanvas", points, stroke, gStart, gEnd, 10.0);
+    }
+
+    function drawDetailedChart() {
+      const isHigh = currentScenarioKey === 'high';
+      const points = isHigh
+        ? [65, 68, 70, 72, 74, 75, 77, 78, 78.4]
+        : [50, 52, 53, 54, 55, 56, 54, 53, 52];
+      drawSpline("sensorDetailedCanvas", points, "#007AFF", "rgba(0, 122, 255, 0.35)", "rgba(0, 0, 0, 0.0)");
+    }
+
+    function updateChartTime(label, btn) {
+      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      drawOverviewChart();
+    }
+
+    function toggleSensorChartDataset() {
+      drawDetailedChart();
+    }
+
+    // --- Modal Sheets Management ---
+    const modalData = {
+      leaf: {
+        title: "Leaf Wetness Sensor (RS485)",
+        content: `
+          <div class="sheet-callout-box">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Hardware Specification</h4>
+            <p>Industrial IP68 Dielectric Grid Sensor communicating over RS485 Modbus-RTU into hardware UART2 (GPIO 16/17) via a 3.3V MAX485 transceiver. Differential line with 120&Omega; termination resistance.</p>
+          </div>
+          <div class="sheet-callout-box" style="margin-top: 10px;">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Pathology Impact</h4>
+            <p><em>Phytophthora infestans</em> requires a minimum of <strong>10 continuous hours of leaf surface water</strong> at 12°C–22°C to achieve full zoospore motility and stomatal encystment.</p>
+          </div>
+          <div style="margin-top: 12px; font-size: 12.5px; color: var(--label-secondary); line-height: 1.4;">
+            <strong>Current Telemetry:</strong> 11.8 continuous hours wet. High risk flag triggered in edge firmware.
+          </div>
+        `
+      },
+      ambient: {
+        title: "Ambient Temperature & RH",
+        content: `
+          <div class="sheet-callout-box">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Stevenson Radiation Shield</h4>
+            <p>Housed inside a UV-stabilized, louvered radiation screen at canopy level to isolate sensor measurements from direct solar thermal loading and direct precipitation droplets.</p>
+          </div>
+          <div class="sheet-callout-box" style="margin-top: 10px;">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Algorithm Threshold</h4>
+            <p>Relative humidity &ge; 90% serves as the secondary atmospheric indicator in the adapted Wallin Severity Value matrix when continuous leaf wetness is elevated.</p>
+          </div>
+        `
+      },
+      soil_moisture: {
+        title: "Capacitive Soil Moisture v1.2",
+        content: `
+          <div class="sheet-callout-box">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Dielectric Capacitance Principle</h4>
+            <p>Measures the dielectric permittivity of the soil substrate at 10cm root-zone depth. Operating analog output into ADC1_CH6 (GPIO 34) calibrated with 2-point gravimetric baseline.</p>
+          </div>
+          <div class="sheet-callout-box" style="margin-top: 10px;">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Bacterial Wilt Link</h4>
+            <p>Soil moisture &ge; 75% VWC saturates macro-pores, stripping oxygen and facilitating chemotactic migration of <em>Ralstonia pseudosolanacearum</em> towards Solanaceae root exudates.</p>
+          </div>
+        `
+      },
+      soil_temp: {
+        title: "DS18B20 Soil Temperature Probe",
+        content: `
+          <div class="sheet-callout-box">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">1-Wire Stainless Steel Probe</h4>
+            <p>Waterproof stainless steel encapsulation placed at 10cm crop root depth. Operates on 1-Wire protocol (GPIO 4) with a 4.7k&Omega; pullup resistor.</p>
+          </div>
+          <div class="sheet-callout-box" style="margin-top: 10px;">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Optimal Pathogen Multiplication</h4>
+            <p>Soil temperatures between 28°C and 35°C trigger maximum multiplication rates for Bacterial Wilt, yielding a Soil Temperature Factor (S_ST) of 1.0.</p>
+          </div>
+        `
+      },
+      disease: {
+        title: "Disease Early Warning Protocol",
+        content: `
+          <div class="sheet-callout-box">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Dual Pathogen Protection</h4>
+            <p>SolanaWatch evaluates both foliar (Late Blight) and root-zone (Bacterial Wilt) microclimatic risk factors simultaneously using literature-grounded agronomic models.</p>
+          </div>
+          <div class="sheet-callout-box" style="margin-top: 10px;">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Actionable Recommendations</h4>
+            <ul style="padding-left: 18px; margin-top: 6px; display: flex; flex-direction: column; gap: 4px;">
+              <li>Prune lower canopy to decrease relative humidity.</li>
+              <li>Withhold furrow and overhead irrigation.</li>
+              <li>Apply protective copper hydroxide spray within 12-24 hours.</li>
+            </ul>
+          </div>
+        `
+      },
+      protocol: {
+        title: "Agronomic Decision Protocols",
+        content: `
+          <div class="sheet-callout-box">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Cultural Interventions</h4>
+            <p>Pre-symptomatic interventions allow farmers to avoid routine calendar chemical spray schedules, reducing input costs while preventing irreversible vascular and foliar destruction.</p>
+          </div>
+        `
+      },
+      late_blight_model: {
+        title: "Adapted Wallin Severity Value",
+        content: `
+          <div class="sheet-callout-box">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">BLITECAST & Wallin Model</h4>
+            <p>Adapted from Wallin (1962) and BLITECAST. Accumulates hours of favorable environmental conditions: continuous leaf wetness &ge; 10h at 12°C–22°C triggers Severity Value (SV) = 3 (High Alert).</p>
+          </div>
+        `
+      },
+      bacterial_wilt_model: {
+        title: "Hydrothermal Soil Index",
+        content: `
+          <div class="sheet-callout-box">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Formula: R_BW = 0.50*S_ST + 0.50*S_SM</h4>
+            <p>Combines root-zone soil temperature factor (S_ST) and volumetric soil moisture factor (S_SM). Scores &ge; 0.70 trigger immediate warnings to halt field irrigation.</p>
+          </div>
+        `
+      },
+      mcu_spec: {
+        title: "ESP32 DevKit V1 Hardware",
+        content: `
+          <div class="sheet-callout-box">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Microcontroller Specifications</h4>
+            <p>Dual-core 32-bit Xtensa LX6 @ 240 MHz, 520 KB SRAM, 4MB SPI Flash. Deep-sleep duty cycling with ULP timer draws only 61.32 &mu;W in standby.</p>
+          </div>
+        `
+      },
+      edge_sync: {
+        title: "Offline SPI MicroSD Buffer",
+        content: `
+          <div class="sheet-callout-box">
+            <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Resilient Edge Buffering</h4>
+            <p>If rural 2.4 GHz Wi-Fi drops, telemetry packets are appended to <code>telemetry_buffer.jsonl</code> on a 16GB FAT32 MicroSD card. Once Wi-Fi reconnects, packets are synchronized sequentially into the Turso libSQL database.</p>
+          </div>
+        `
+      }
+    };
+
+    function openModal(key) {
+      const data = modalData[key] || modalData['disease'];
+      document.getElementById('sheetTitle').innerText = data.title;
+      document.getElementById('sheetBody').innerHTML = data.content;
+      document.getElementById('modalBackdrop').classList.add('open');
+    }
+
+    function closeModalDirect() {
+      document.getElementById('modalBackdrop').classList.remove('open');
+    }
+
+    function closeModal(e) {
+      if (e.target.id === 'modalBackdrop') {
+        closeModalDirect();
+      }
+    }
+
+    // Window load initialization
+    window.addEventListener('load', () => {
+      setScenario('high');
+      drawOverviewChart();
+      drawDetailedChart();
+    });
+
+    // Window resize chart recalculation
+    window.addEventListener('resize', () => {
+      drawOverviewChart();
+      drawDetailedChart();
+    });
+  </script>
+</body>
+</html>

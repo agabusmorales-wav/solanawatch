@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SolanaWatch - Weekly Progress Report (Week of Sept 24, 2026)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+  @page {
+    size: 1920px 1080px;
+    margin: 0;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #ffffff;
+    color: #0f172a;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .slide {
+    width: 1920px;
+    height: 1080px;
+    page-break-after: always;
+    page-break-inside: avoid;
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+    padding: 55px 75px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Slide Header */
+  .slide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 18px;
+  }
+  .header-left .category-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #0284c7;
+    margin-bottom: 4px;
+  }
+  .header-left .category-pill::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #0284c7;
+  }
+  .header-left h1 {
+    font-size: 36px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+  }
+  .header-left p {
+    font-size: 16px;
+    font-weight: 600;
+    color: #475569;
+    margin-top: 4px;
+  }
+  .header-badge {
+    background: #dcfce7;
+    border: 2px solid #16a34a;
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #15803d;
+    letter-spacing: 0.5px;
+  }
+
+  /* 3 Column Layout (Slide 1) */
+  .three-col-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    flex: 1;
+  }
+  .col-card {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 24px 22px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+  .col-card.blue { border-top: 6px solid #0284c7; }
+  .col-card.amber { border-top: 6px solid #d97706; }
+  .col-card.green { border-top: 6px solid #16a34a; }
+
+  .col-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .col-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .col-card.blue .col-title { color: #0284c7; }
+  .col-card.amber .col-title { color: #d97706; }
+  .col-card.green .col-title { color: #16a34a; }
+
+  .col-item {
+    margin-bottom: 14px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  }
+  .col-item:last-child {
+    margin-bottom: 0;
+  }
+  .col-item h3 {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .col-item p {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #334155;
+    line-height: 1.5;
+  }
+
+  .slide-footer-bar {
+    margin-top: 16px;
+    padding: 12px 24px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  /* 2 Column Layout (Slide 2) */
+  .two-col-grid {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 28px;
+    flex: 1;
+  }
+  .image-container {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .info-panel {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 24px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+  .info-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0284c7;
+    margin-bottom: 14px;
+  }
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .feature-item {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  }
+  .feature-item h4 {
+    font-size: 15.5px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .feature-item p {
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    line-height: 1.45;
+  }
+</style>
+</head>
+<body>
+
+  <!-- SLIDE 1: EXECUTIVE PROGRESS MATRIX -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="header-left">
+        <div class="category-pill">Weekly Progress Report</div>
+        <h1>SOLANAWATCH  |  SURFER BROS</h1>
+        <p>Group 1 (3ITC) • UST College of Information and Computing Sciences (CICS) • Special Term, A/Y 2025–2026</p>
+      </div>
+      <div class="header-badge">● STATUS: ON TRACK</div>
+    </div>
+
+    <div class="three-col-grid">
+      <!-- Col 1: Current Tasks -->
+      <div class="col-card blue">
+        <div class="col-header">
+          <div class="col-title">CURRENT TASKS</div>
+          <span style="font-size: 13px; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 4px 10px; border-radius: 12px;">Active / Completed</span>
+        </div>
+        
+        <div class="col-item">
+          <h3>📦 100% Materials Procurement</h3>
+          <p>Acquired full ₱7,208 BOM: ESP32 MCU, DHT22 with Stevenson shield, dual DS18B20 soil temp probes, Capacitive v1.2, industrial IP68 RS485 leaf wetness grid, 20W solar PV, MPPT controller, 12.8V LiFePO4 battery (47-day autonomy), and IP66 enclosure.</p>
+        </div>
+
+        <div class="col-item">
+          <h3>⚡ Physical Circuit Bring-Up</h3>
+          <p>Initiated breadboard layout, pin mapping, and isolated dual 5V/3.3V power rails. Verified initial 1-Wire, ADC, and RS485 communication lines.</p>
+        </div>
+
+        <div class="col-item">
+          <h3>💻 Interactive UI Dashboards</h3>
+          <p>Completed functional PC Web Dashboard (desktop.html) and iOS mobile view (index.html) featuring live microclimate gauges and disease risk calculation.</p>
+        </div>
+
+        <div class="col-item">
+          <h3>📋 Ethics Clearance Complete</h3>
+          <p>Accomplished and packaged UST Ethics Review Form 4.2 and Form 7.2 for research protocol compliance and participant safety.</p>
+        </div>
+      </div>
+
+      <!-- Col 2: Expected Challenges -->
+      <div class="col-card amber">
+        <div class="col-header">
+          <div class="col-title">EXPECTED CHALLENGES</div>
+          <span style="font-size: 13px; font-weight: 700; color: #d97706; background: #fef3c7; padding: 4px 10px; border-radius: 12px;">Mitigated</span>
+        </div>
+
+        <div class="col-item">
+          <h3>⚠️ Mixed-Bus Signal Integrity</h3>
+          <p>Concurrent 1-Wire, analog ADC, and RS485 lines can cause electrical noise. Separated 5V logic and 3.3V sensor rails via dual buck converters; added 4.7kΩ pull-ups and line filters.</p>
+        </div>
+
+        <div class="col-item">
+          <h3>⏱️ RS485 Modbus-RTU Timing</h3>
+          <p>Potential timing contention between MAX485 switching and ESP32 Wi-Fi routines. Dedicated ESP32 Core 1 FreeRTOS task to sensor polling, isolating it from Core 0 network tasks.</p>
+        </div>
+
+        <div class="col-item">
+          <h3>🧪 Two-Point Soil Calibration</h3>
+          <p>ADC variance across Philippine clay-loam Solanaceae soils. Calibrating in controlled oven-dry (0% VWC) and saturated (100% VWC) soil samples.</p>
+        </div>
+      </div>
+
+      <!-- Col 3: Plan for Next Week -->
+      <div class="col-card green">
+        <div class="col-header">
+          <div class="col-title">PLAN FOR NEXT WEEK</div>
+          <span style="font-size: 13px; font-weight: 700; color: #16a34a; background: #dcfce7; padding: 4px 10px; border-radius: 12px;">Next Sprint</span>
+        </div>
+
+        <div class="col-item">
+          <h3>🔌 Complete Circuit Assembly</h3>
+          <p>Finalize physical breadboard wiring harness connecting all 5 sensors to ESP32 and test power delivery from the 12.8V LiFePO4 battery pack.</p>
+        </div>
+
+        <div class="col-item">
+          <h3>🔄 FreeRTOS Firmware Routines</h3>
+          <p>Implement multi-sensor sampling loops and offline FIFO MicroSD buffer (telemetry_buffer.jsonl) for zero-loss edge storage.</p>
+        </div>
+
+        <div class="col-item">
+          <h3>☁️ Cloud Ingestion & Risk Engine</h3>
+          <p>Connect Node.js/Express REST API to Turso libSQL cloud database and link Wallin SV and Hydrothermal risk models.</p>
+        </div>
+
+        <div class="col-item">
+          <h3>🌡️ Sensor Bench Calibration</h3>
+          <p>Execute ice-point (0.0°C) and NaCl humidity chamber (75.3% RH) calibration tests.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer-bar">
+      <div><strong>Team Members:</strong> Morales, Simeon Agabus S. • Rapada, Raven M. • Hernandez, Andrei S. • Eugenio, Vince Angelo</div>
+      <div><strong>Adviser:</strong> Prof. Eugenia R. Zhuo, DIT &nbsp;|&nbsp; <strong>Special Term A/Y 2025–2026</strong></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: HARDWARE MATERIALS & SOFTWARE SHOWCASE -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="header-left">
+        <div class="category-pill">Hardware Showcase & System Highlights</div>
+        <h1>MATERIALS INVENTORY & WORKING APPLICATION</h1>
+        <p>SolanaWatch: An IoT-Based Disease Early Warning System for Soil-Grown Solanaceae Crops</p>
+      </div>
+      <div class="header-badge">● 100% MATERIALS IN-HAND</div>
+    </div>
+
+    <div class="two-col-grid">
+      <div class="image-container">
+        <img src="../../figures/web_dashboard_mockup.jpg" alt="SolanaWatch Working Web Dashboard">
+      </div>
+
+      <div class="info-panel">
+        <div class="info-title">Materials Inventory & System Highlights</div>
+
+        <ul class="feature-list">
+          <li class="feature-item">
+            <h4>✔ 100% Complete Hardware Materials (₱7,208 BOM)</h4>
+            <p>ESP32 DevKit V1, DHT22 in Stevenson shield, DS18B20 soil temp, Capacitive v1.2, IP68 RS485 leaf wetness grid, 20W PV + MPPT + 12.8V LiFePO4 battery (47-day autonomy), IP66 enclosure.</p>
+          </li>
+          <li class="feature-item">
+            <h4>✔ Physical Circuit Bring-Up Underway</h4>
+            <p>Breadboard component layout, pin mapping, isolated 5V & 3.3V power rails, and preliminary sensor communication checks actively progressing.</p>
+          </li>
+          <li class="feature-item">
+            <h4>✔ Working PC & Mobile UI Dashboards</h4>
+            <p>Real-time telemetry readouts for Soil Moisture (68%), Soil Temp (24°C), Air Temp (22°C), Leaf Wetness (4.2h), and Humidity (88%).</p>
+          </li>
+          <li class="feature-item">
+            <h4>✔ Pre-Symptomatic Disease Risk Engine</h4>
+            <p>Embedded algorithms for Late Blight (Wallin Severity Values @ LWD >= 10h) and Bacterial Wilt (Hydrothermal Soil Risk Index R_BW).</p>
+          </li>
+          <li class="feature-item">
+            <h4>✔ Institutional Ethics Clearance Complete</h4>
+            <p>UST Form 4.2 & Form 7.2 accomplished for research protocol compliance and participant safety.</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="slide-footer-bar">
+      <div><strong>Interactive Prototype:</strong> Open <code>SolanaWatch_PC_Dashboard.html</code> or <code>SolanaWatch_iOS_App.html</code></div>
+      <div><strong>SolanaWatch:</strong> IoT Early Warning System for Solanaceae Crops &nbsp;|&nbsp; Group 1 (3ITC)</div>
+    </div>
+  </div>
+
+</body>
+</html>

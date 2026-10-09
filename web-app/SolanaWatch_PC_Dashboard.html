@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SolanaWatch — macOS / PC Agronomic Decision Support Dashboard</title>
+
+  <!-- Apple System Fonts & Fallbacks -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- SolanaWatch Hardware & REST API Bridge -->
+  <script src="hardware-bridge.js"></script>
+
+  <style>
+    /* ==========================================================================
+       APPLE macOS SEQUOIA / PC DESIGN SYSTEM TOKENS
+       ========================================================================== */
+    :root {
+      --font-apple: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Helvetica Neue", "Plus Jakarta Sans", sans-serif;
+      --font-mono: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+      /* Apple System Accent Colors */
+      --apple-blue: #0A84FF;
+      --apple-green: #30D158;
+      --apple-indigo: #5E5CE6;
+      --apple-orange: #FF9F0A;
+      --apple-pink: #FF375F;
+      --apple-purple: #BF5AF2;
+      --apple-red: #FF453A;
+      --apple-teal: #40C8E0;
+      --apple-yellow: #FFD60A;
+      --apple-mint: #63E6E2;
+
+      --sidebar-width: 270px;
+      --topbar-height: 56px;
+      --spring-easing: cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    /* macOS Dark Theme (Default) */
+    body.macos-dark {
+      --bg-window: #1E1E22;
+      --bg-canvas: #121214;
+      --bg-sidebar: rgba(26, 26, 30, 0.85);
+      --bg-card: rgba(36, 36, 42, 0.72);
+      --bg-card-hover: rgba(45, 45, 52, 0.85);
+      --bg-card-subtle: rgba(255, 255, 255, 0.04);
+      --bg-toolbar: rgba(30, 30, 34, 0.85);
+      --border-window: rgba(255, 255, 255, 0.12);
+      --border-card: rgba(255, 255, 255, 0.08);
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --separator: rgba(255, 255, 255, 0.10);
+
+      --text-primary: #FFFFFF;
+      --text-secondary: rgba(235, 235, 245, 0.65);
+      --text-tertiary: rgba(235, 235, 245, 0.38);
+
+      --fill-control: rgba(255, 255, 255, 0.08);
+      --fill-control-hover: rgba(255, 255, 255, 0.14);
+      --fill-control-active: rgba(255, 255, 255, 0.20);
+
+      --shadow-window: 0 35px 80px -20px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.12);
+      --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    /* macOS Light Theme */
+    body.macos-light {
+      --bg-window: #FFFFFF;
+      --bg-canvas: #E4E5EB;
+      --bg-sidebar: rgba(246, 246, 248, 0.90);
+      --bg-card: rgba(255, 255, 255, 0.88);
+      --bg-card-hover: rgba(255, 255, 255, 1);
+      --bg-card-subtle: rgba(0, 0, 0, 0.03);
+      --bg-toolbar: rgba(250, 250, 252, 0.90);
+      --border-window: rgba(0, 0, 0, 0.12);
+      --border-card: rgba(0, 0, 0, 0.06);
+      --border-subtle: rgba(0, 0, 0, 0.05);
+      --separator: rgba(0, 0, 0, 0.08);
+
+      --text-primary: #1C1C1E;
+      --text-secondary: rgba(60, 60, 67, 0.68);
+      --text-tertiary: rgba(60, 60, 67, 0.40);
+
+      --fill-control: rgba(0, 0, 0, 0.05);
+      --fill-control-hover: rgba(0, 0, 0, 0.09);
+      --fill-control-active: rgba(0, 0, 0, 0.14);
+
+      --shadow-window: 0 25px 70px -15px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.08);
+      --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: var(--font-apple);
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Outer Desktop Canvas Shell */
+    .desktop-viewport {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 10%, rgba(48, 209, 88, 0.08), transparent 60%), var(--bg-canvas);
+    }
+
+    /* macOS Main App Window */
+    .macos-window {
+      width: 100%;
+      max-width: 1540px;
+      height: 100%;
+      max-height: 940px;
+      background: var(--bg-window);
+      border-radius: 20px;
+      border: 1px solid var(--border-window);
+      box-shadow: var(--shadow-window);
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ==========================================================================
+       macOS TRANSLUCENT SIDEBAR
+       ========================================================================== */
+    .macos-sidebar {
+      width: var(--sidebar-width);
+      height: 100%;
+      background: var(--bg-sidebar);
+      backdrop-filter: blur(30px) saturate(190%);
+      -webkit-backdrop-filter: blur(30px) saturate(190%);
+      border-right: 1px solid var(--border-window);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 50;
+      padding: 16px 14px;
+    }
+
+    /* macOS Traffic Light Buttons */
+    .traffic-lights {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 6px 16px;
+    }
+
+    .traffic-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .dot-close { background: #FF5F56; border: 0.5px solid #E0443E; }
+    .dot-minimize { background: #FFBD2E; border: 0.5px solid #DEA123; }
+    .dot-zoom { background: #27C93F; border: 0.5px solid #1AAB29; }
+
+    /* App Brand Header */
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 8px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 14px;
+    }
+
+    .brand-icon-box {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--apple-green), var(--apple-teal));
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(48, 209, 88, 0.35);
+    }
+
+    .brand-title-wrap h2 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text-primary);
+    }
+
+    .brand-title-wrap span {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* Sidebar Navigation Links */
+    .sidebar-nav-scroll {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-nav-scroll::-webkit-scrollbar { display: none; }
+
+    .nav-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      padding: 0 10px;
+      margin-bottom: 6px;
+    }
+
+    .nav-menu-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .nav-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s var(--spring-easing);
+      user-select: none;
+    }
+
+    .nav-menu-item:hover {
+      background: var(--fill-control-hover);
+      color: var(--text-primary);
+    }
+
+    .nav-menu-item.active {
+      background: var(--apple-blue);
+      color: #FFFFFF;
+      font-weight: 600;
+      box-shadow: 0 2px 10px rgba(10, 132, 255, 0.3);
+    }
+
+    .nav-menu-item .menu-badge {
+      margin-left: auto;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2px 7px;
+      border-radius: 8px;
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+
+    .nav-menu-item.active .menu-badge {
+      background: rgba(255, 255, 255, 0.28);
+      color: #fff;
+    }
+
+    /* Edge Hardware Live Status Card at Bottom of Sidebar */
+    .sidebar-hardware-box {
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .hw-status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .hw-pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--apple-green);
+      box-shadow: 0 0 8px var(--apple-green);
+      animation: hwPulse 2s infinite;
+    }
+
+    @keyframes hwPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* ==========================================================================
+       MAIN CONTENT CONTAINER
+       ========================================================================== */
+    .macos-main {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-window);
+    }
+
+    /* macOS Window Toolbar */
+    .macos-toolbar {
+      height: var(--topbar-height);
+      background: var(--bg-toolbar);
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border-bottom: 1px solid var(--border-window);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+      gap: 16px;
+      z-index: 40;
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .toolbar-title-wrap h1 {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text-primary);
+    }
+
+    .toolbar-title-wrap p {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+    }
+
+    /* Segmented Plot Switcher */
+    .macos-segmented {
+      display: flex;
+      background: var(--fill-control);
+      border-radius: 10px;
+      padding: 2.5px;
+      gap: 2.5px;
+    }
+
+    .crop-badge-single {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--fill-control);
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      user-select: none;
+    }
+
+    .crop-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--apple-green);
+      box-shadow: 0 0 6px var(--apple-green);
+    }
+
+    .segment-btn {
+      border: none;
+      background: transparent;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s var(--spring-easing);
+      font-family: var(--font-apple);
+    }
+
+    .segment-btn.active {
+      background: var(--bg-window);
+      color: var(--text-primary);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Presentation Scenario Controller */
+    .scenario-pill-bar {
+      display: flex;
+      background: var(--fill-control);
+      border-radius: 10px;
+      padding: 2.5px;
+      gap: 2px;
+    }
+
+    .scen-btn {
+      border: none;
+      background: transparent;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-apple);
+      transition: all 0.2s;
+    }
+
+    .scen-btn.active {
+      background: var(--bg-window);
+      color: var(--text-primary);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .scen-btn.danger.active { color: var(--apple-red); }
+    .scen-btn.warning.active { color: var(--apple-orange); }
+    .scen-btn.safe.active { color: var(--apple-green); }
+
+    .scen-btn.live {
+      border: 1px solid rgba(48, 209, 88, 0.4);
+      background: rgba(48, 209, 88, 0.08);
+      color: var(--apple-green);
+    }
+
+    .scen-btn.live.active {
+      background: var(--apple-green);
+      color: #000000;
+      box-shadow: 0 0 12px rgba(48, 209, 88, 0.45);
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      display: inline-block;
+      animation: pulseLiveDot 1.6s infinite;
+    }
+
+    @keyframes pulseLiveDot {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(1.35); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* macOS Toolbar Icon Buttons */
+    .tb-btn {
+      border: 1px solid var(--border-card);
+      background: var(--fill-control);
+      color: var(--text-primary);
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-apple);
+    }
+
+    .tb-btn:hover {
+      background: var(--fill-control-hover);
+      transform: translateY(-1px);
+    }
+
+    /* ==========================================================================
+       DASHBOARD WORKSPACE SCROLL AREA
+       ========================================================================== */
+    .dashboard-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .dashboard-body::-webkit-scrollbar {
+      width: 8px;
+    }
+    .dashboard-body::-webkit-scrollbar-thumb {
+      background: var(--border-subtle);
+      border-radius: 4px;
+    }
+
+    /* macOS Translucent Glass Cards */
+    .mac-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid var(--border-card);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      transition: all 0.2s var(--spring-easing);
+    }
+
+    .card-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .card-header-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .card-action-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--apple-blue);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* ==========================================================================
+       ROW 1: DISEASE OUTBREAK HERO BANNER
+       ========================================================================== */
+    .hero-alert-banner {
+      border-radius: 18px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid transparent;
+      gap: 24px;
+      transition: all 0.3s var(--spring-easing);
+    }
+
+    .hero-alert-banner.danger-mode {
+      background: linear-gradient(135deg, rgba(255, 69, 58, 0.16), rgba(255, 69, 58, 0.04));
+      border-color: rgba(255, 69, 58, 0.3);
+    }
+
+    .hero-alert-banner.warning-mode {
+      background: linear-gradient(135deg, rgba(255, 159, 10, 0.16), rgba(255, 159, 10, 0.04));
+      border-color: rgba(255, 159, 10, 0.3);
+    }
+
+    .hero-alert-banner.safe-mode {
+      background: linear-gradient(135deg, rgba(48, 209, 88, 0.16), rgba(48, 209, 88, 0.04));
+      border-color: rgba(48, 209, 88, 0.3);
+    }
+
+    .alert-hero-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .alert-hero-glyph {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .danger-mode .alert-hero-glyph {
+      background: var(--apple-red);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(255, 69, 58, 0.4);
+    }
+
+    .warning-mode .alert-hero-glyph {
+      background: var(--apple-orange);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(255, 159, 10, 0.4);
+    }
+
+    .safe-mode .alert-hero-glyph {
+      background: var(--apple-green);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(48, 209, 88, 0.4);
+    }
+
+    .alert-hero-text h2 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text-primary);
+    }
+
+    .alert-hero-text p {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      line-height: 1.4;
+      max-width: 780px;
+    }
+
+    .alert-hero-tags {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .alert-tag-box {
+      background: var(--fill-control);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 8px 14px;
+      text-align: right;
+    }
+
+    .tag-box-num {
+      font-size: 16px;
+      font-weight: 700;
+      font-family: var(--font-apple);
+    }
+
+    .tag-box-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* ==========================================================================
+       ROW 2: 4-COLUMN SENSORY METRIC TILES
+       ========================================================================== */
+    .metric-tiles-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .mac-metric-tile {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      cursor: pointer;
+      transition: transform 0.2s var(--spring-easing), border-color 0.2s;
+    }
+
+    .mac-metric-tile:hover {
+      transform: translateY(-2px);
+      border-color: var(--apple-blue);
+    }
+
+    .tile-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .tile-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tile-badge {
+      padding: 3px 8px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-red { background: rgba(255, 69, 58, 0.15); color: var(--apple-red); }
+    .badge-amber { background: rgba(255, 159, 10, 0.15); color: var(--apple-orange); }
+    .badge-green { background: rgba(48, 209, 88, 0.15); color: var(--apple-green); }
+
+    .tile-value-big {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.6px;
+      color: var(--text-primary);
+    }
+
+    .tile-value-big span {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .tile-bottom-meta {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 10px;
+    }
+
+    /* ==========================================================================
+       ROW 3: TIME-SERIES CHART & DECISION SUPPORT (2/3 + 1/3 SPLIT)
+       ========================================================================== */
+    .dashboard-split-row {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr;
+      gap: 20px;
+    }
+
+    .chart-container-box {
+      height: 240px;
+      position: relative;
+      width: 100%;
+      margin: 8px 0;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .time-selector-pills {
+      display: flex;
+      background: var(--fill-control);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .time-filter-btn {
+      border: none;
+      background: transparent;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: var(--font-apple);
+    }
+
+    .time-filter-btn.active {
+      background: var(--bg-window);
+      color: var(--text-primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Agronomic Action List */
+    .action-steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .action-step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--fill-control);
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .step-circle-badge {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--apple-blue);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-content h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .step-content p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    /* ==========================================================================
+       ROW 4: 3-COLUMN DEEP TECHNICAL GRID (PATHOLOGY, HARDWARE, PLOT)
+       ========================================================================== */
+    .deep-tech-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+    }
+
+    .code-formula-box {
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      margin-top: 10px;
+    }
+
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      margin-top: 10px;
+    }
+
+    .spec-table tr:not(:last-child) {
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .spec-table td {
+      padding: 8px 0;
+      color: var(--text-secondary);
+    }
+
+    .spec-table td:last-child {
+      text-align: right;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* Modal / Inspector Sheet */
+    .mac-modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .mac-modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mac-dialog {
+      width: 580px;
+      max-width: 90%;
+      background: var(--bg-window);
+      border: 1px solid var(--border-window);
+      border-radius: 18px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dialog-header {
+      padding: 16px 20px;
+      background: var(--bg-toolbar);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dialog-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body class="macos-dark">
+  <div class="desktop-viewport">
+
+    <!-- MAIN macOS APP WINDOW -->
+    <div class="macos-window">
+
+      <!-- ======================================================================
+           macOS TRANSLUCENT SIDEBAR
+           ====================================================================== -->
+      <aside class="macos-sidebar">
+        <!-- Traffic Light Buttons -->
+        <div class="traffic-lights">
+          <div class="traffic-dot dot-close" title="Close"></div>
+          <div class="traffic-dot dot-minimize" title="Minimize"></div>
+          <div class="traffic-dot dot-zoom" onclick="toggleFullscreenWindow()" title="Expand Fullscreen"></div>
+        </div>
+
+        <!-- App Brand & Title -->
+        <div class="sidebar-brand">
+          <div class="brand-icon-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A9.49 9.49 0 0 0 17 8m0 0a12.83 12.83 0 0 0-4-7.66C11 1.77 9 4.24 8 7c3 0 6 0 9 1Z" />
+            </svg>
+          </div>
+          <div class="brand-title-wrap">
+            <h2>SolanaWatch</h2>
+            <span>macOS Agronomic Client</span>
+          </div>
+        </div>
+
+        <!-- Navigation Categories -->
+        <div class="sidebar-nav-scroll">
+          <div>
+            <div class="nav-group-title">DASHBOARD</div>
+            <ul class="nav-menu-list">
+              <li class="nav-menu-item active" onclick="selectNav(this, 'overview')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span>Live Overview</span>
+                <span class="menu-badge" id="sideAlertBadge">ALERT</span>
+              </li>
+              <li class="nav-menu-item" onclick="selectNav(this, 'telemetry')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                <span>Sensors & Telemetry</span>
+              </li>
+              <li class="nav-menu-item" onclick="selectNav(this, 'risk')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                <span>Disease Risk Radar</span>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="nav-group-title">ENGINEERING & EDGE</div>
+            <ul class="nav-menu-list">
+              <li class="nav-menu-item" onclick="selectNav(this, 'hardware')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                <span>Hardware & Solar Power</span>
+              </li>
+              <li class="nav-menu-item" onclick="selectNav(this, 'sync')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/></svg>
+                <span>MicroSD Sync Buffer</span>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="nav-group-title">ACADEMIC & FIELD</div>
+            <ul class="nav-menu-list">
+              <li class="nav-menu-item" onclick="selectNav(this, 'cics')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+                <span>UST CICS Capstone Info</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Real-time Hardware Telemetry Sidebar Widget -->
+        <div class="sidebar-hardware-box">
+          <div class="hw-status-row">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <div class="hw-pulse-dot" id="sideHwDot"></div>
+              <strong style="color: var(--text-primary);">Node 01 ESP32</strong>
+            </div>
+            <span style="color: var(--apple-green); font-weight: 700;" id="sideHwBat">94% (13.3V)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary);">
+            <span>Solar Input: <strong id="sideSolarVal" style="color: var(--text-primary);">+18.4 W</strong></span>
+            <span>Wi-Fi: <strong>-58 dBm</strong></span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ======================================================================
+           MAIN CONTENT CANVAS
+           ====================================================================== -->
+      <main class="macos-main">
+
+        <!-- macOS Window Toolbar -->
+        <header class="macos-toolbar">
+          <div class="toolbar-left">
+            <div class="toolbar-title-wrap">
+              <h1 id="desktopHeaderTitle">Microclimate & Pathology Dashboard</h1>
+              <p>Brgy. San Jose, Field 3 • Solanaceae Crops • Autonomous ESP32 Sensing Network</p>
+            </div>
+
+            <!-- Unified Target Crop Badge -->
+            <div class="crop-badge-single">
+              <span class="crop-badge-dot"></span>
+              <span>Target: Solanaceae Crops</span>
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <!-- Oral Defense / Presentation Scenario Switcher & Live Hardware -->
+            <div class="scenario-pill-bar">
+              <button class="scen-btn live active" id="liveHwBtn" onclick="toggleDesktopLiveHardware()" title="Connect to Live ESP32 Hardware">
+                <span class="live-dot" id="liveDot"></span> <span id="liveBtnText">Live Hardware</span>
+              </button>
+              <button class="scen-btn danger" onclick="applyScenario('high')" title="Simulate High Wet-Season Outbreak Risk">
+                <span>🚨</span> High Risk
+              </button>
+              <button class="scen-btn warning" onclick="applyScenario('moderate')" title="Simulate Developing Conducive Climate">
+                <span>⚠️</span> Moderate
+              </button>
+              <button class="scen-btn safe" onclick="applyScenario('safe')" title="Simulate Safe/Normal Conditions">
+                <span>🟢</span> Safe
+              </button>
+            </div>
+
+            <!-- Hardware Settings Modal Button -->
+            <button class="tb-btn" onclick="window.SolanaHardware.openModal()" title="Hardware Link Configuration">
+              <span>📡</span> <span id="hwToolbarBadge">HW Link</span>
+            </button>
+
+            <!-- Switch to iOS Mobile Version Button -->
+            <a href="index.html" class="tb-btn" style="text-decoration: none;" title="Open iOS Mobile View">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="14" height="20" x="5" y="2" rx="3" />
+                <path d="M12 18h.01" />
+              </svg>
+              <span>📱 iOS App View</span>
+            </a>
+
+            <!-- macOS Dark/Light Mode Switcher -->
+            <button class="tb-btn" onclick="toggleMacTheme()" title="Toggle Dark/Light Mode">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <!-- Scrollable Dashboard Content -->
+        <div class="dashboard-body">
+
+          <!-- ROW 1: Wide Disease Outbreak Hero Banner -->
+          <section class="hero-alert-banner danger-mode" id="desktopHeroBanner">
+            <div class="alert-hero-left">
+              <div class="alert-hero-glyph" id="desktopAlertGlyph">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V8h2v4z"/>
+                </svg>
+              </div>
+              <div class="alert-hero-text">
+                <h2 id="desktopHeroTitle">CRITICAL OUTBREAK ALERT: Late Blight (SV = 3) & Bacterial Wilt</h2>
+                <p id="desktopHeroDesc">
+                  Adapted Wallin Severity Index has reached Level 3 due to 11.8 hours of continuous foliar leaf wetness in the 12°C–22°C conducive range. Subsurface root saturation (78.4% VWC) concurrently triggers high bacterial proliferation risk.
+                </p>
+              </div>
+            </div>
+
+            <div class="alert-hero-tags">
+              <div class="alert-tag-box">
+                <div class="tag-box-num" style="color: var(--apple-red);" id="tagWallinVal">SV = 3 (Red)</div>
+                <div class="tag-box-label">Late Blight Severity</div>
+              </div>
+              <div class="alert-tag-box">
+                <div class="tag-box-num" style="color: var(--apple-orange);" id="tagHydroVal">R_BW = 0.80</div>
+                <div class="tag-box-label">Bacterial Wilt Index</div>
+              </div>
+              <button class="tb-btn" style="height: 38px; background: var(--apple-blue); color: #fff; border: none;" onclick="openMacModal('action_plan')">
+                View Protocol ›
+              </button>
+            </div>
+          </section>
+
+          <!-- ROW 2: 4-Column Sensory Metric Tiles -->
+          <section class="metric-tiles-row">
+            <!-- Tile 1: Leaf Wetness Duration -->
+            <div class="mac-metric-tile" onclick="openMacModal('lwd')">
+              <div class="tile-top">
+                <span class="tile-name">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                  Leaf Wetness Duration
+                </span>
+                <span class="tile-badge badge-red" id="badgeLwd">Critical (&ge;10h)</span>
+              </div>
+              <div class="tile-value-big" id="valLwd">11.8 <span>hrs</span></div>
+              <div class="tile-bottom-meta">
+                <span>Modbus IP68 Grid</span>
+                <strong style="color: var(--apple-red);" id="metaLwdStatus">Continuous Water Layer</strong>
+              </div>
+            </div>
+
+            <!-- Tile 2: Canopy Air Temp & RH -->
+            <div class="mac-metric-tile" onclick="openMacModal('ambient')">
+              <div class="tile-top">
+                <span class="tile-name">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+                  Canopy Temp & RH
+                </span>
+                <span class="tile-badge badge-red" id="badgeRh">94.2% RH</span>
+              </div>
+              <div class="tile-value-big" id="valAirTemp">21.4 <span>°C</span></div>
+              <div class="tile-bottom-meta">
+                <span>Stevenson Shield (DHT22)</span>
+                <strong style="color: var(--apple-orange);" id="metaAirStatus">Optimal Sporulation</strong>
+              </div>
+            </div>
+
+            <!-- Tile 3: Soil Moisture % VWC -->
+            <div class="mac-metric-tile" onclick="openMacModal('soil_m')">
+              <div class="tile-top">
+                <span class="tile-name">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+                  Volumetric Soil Moisture
+                </span>
+                <span class="tile-badge badge-red" id="badgeSoilM">78.4% VWC</span>
+              </div>
+              <div class="tile-value-big" id="valSoilM">78.4 <span>%</span></div>
+              <div class="tile-bottom-meta">
+                <span>Capacitive Probe v1.2</span>
+                <strong style="color: var(--apple-red);" id="metaSoilMStatus">Waterlogged Pore Space</strong>
+              </div>
+            </div>
+
+            <!-- Tile 4: Subsurface Soil Temp @ 10cm -->
+            <div class="mac-metric-tile" onclick="openMacModal('soil_t')">
+              <div class="tile-top">
+                <span class="tile-name">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  Root-Zone Soil Temp
+                </span>
+                <span class="tile-badge badge-amber" id="badgeSoilT">29.8°C</span>
+              </div>
+              <div class="tile-value-big" id="valSoilT">29.8 <span>°C</span></div>
+              <div class="tile-bottom-meta">
+                <span>DS18B20 1-Wire (10cm)</span>
+                <strong style="color: var(--apple-orange);" id="metaSoilTStatus">Optimal Bacterial Zone</strong>
+              </div>
+            </div>
+          </section>
+
+          <!-- ROW 3: Multi-Series Chart & Agronomic Action List (2/3 + 1/3) -->
+          <section class="dashboard-split-row">
+            <!-- Left: Large Apple-Style Time Series Chart -->
+            <div class="mac-card">
+              <div class="card-header-bar">
+                <div>
+                  <div class="card-header-title">CONTINUOUS 24-HOUR MICROCLIMATIC DYNAMICS</div>
+                  <h3 style="font-size: 16px; font-weight: 700; margin-top: 2px;">Leaf Wetness Duration vs. Infection Threshold Line</h3>
+                </div>
+
+                <div class="time-selector-pills">
+                  <button class="time-filter-btn" onclick="setChartTime('6H', this)">6H</button>
+                  <button class="time-filter-btn active" onclick="setChartTime('24H', this)">24H</button>
+                  <button class="time-filter-btn" onclick="setChartTime('7D', this)">7D</button>
+                  <button class="time-filter-btn" onclick="setChartTime('30D', this)">30D</button>
+                </div>
+              </div>
+
+              <div class="chart-container-box">
+                <canvas id="macMainCanvas"></canvas>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-secondary); border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+                <span>● Red Dotted Line: Critical 10.0h Wallin SV3 Infection Boundary</span>
+                <span>Max Accumulated: 11.8 continuous hours</span>
+                <span>Sampling Cadence: Every 15 minutes (96 cycles/day)</span>
+              </div>
+            </div>
+
+            <!-- Right: Decision Support Action Plan -->
+            <div class="mac-card">
+              <div class="card-header-bar">
+                <div class="card-header-title">PRE-SYMPTOMATIC ACTION PLAN</div>
+                <span class="card-action-link" onclick="openMacModal('protocols')">Export Advisory ›</span>
+              </div>
+
+              <div class="action-steps-list">
+                <div class="action-step-item">
+                  <div class="step-circle-badge">1</div>
+                  <div class="step-content">
+                    <h4 id="actTitle1">Immediate Canopy Aeration</h4>
+                    <p id="actDesc1">Perform selective suckering and prune lower senescent leaves to disrupt laminar stagnant air and speed up foliar drying.</p>
+                  </div>
+                </div>
+
+                <div class="action-step-item">
+                  <div class="step-circle-badge">2</div>
+                  <div class="step-content">
+                    <h4 id="actTitle2">Halt Overhead & Furrow Irrigation</h4>
+                    <p id="actDesc2">Root-zone soil moisture is at 78.4% (waterlogged). Ceasing irrigation eliminates bacterial vascular mobility.</p>
+                  </div>
+                </div>
+
+                <div class="action-step-item">
+                  <div class="step-circle-badge">3</div>
+                  <div class="step-content">
+                    <h4 id="actTitle3">Apply Protective Bio-Fungicides</h4>
+                    <p id="actDesc3">Stage and apply copper hydroxide or <em>Bacillus subtilis</em> within 12 hours before mycelial penetration begins.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ROW 4: 3-Column Technical Validation Grid -->
+          <section class="deep-tech-row">
+            <!-- Col 1: Mathematical Pathogen Models -->
+            <div class="mac-card">
+              <div class="card-header-title">PATHOLOGY RISK ALGORITHMS</div>
+              <h4 style="font-size: 15px; font-weight: 700; margin-top: 4px;">Wallin SV & Hydrothermal Formula</h4>
+
+              <div class="code-formula-box">
+                <strong>// 1. Late Blight (Wallin SV):</strong><br />
+                IF (LWD &ge; 10h) AND (RH &ge; 90%) AND (12°C &le; T &le; 22°C)<br />
+                &rarr; SV = 3 <span style="color: var(--apple-red); font-weight: 700;">[ HIGH ALERT ]</span><br /><br />
+                <strong>// 2. Bacterial Wilt (Hydrothermal):</strong><br />
+                R_BW = (0.50 &times; S_ST) + (0.50 &times; S_SM)<br />
+                Current: (0.50 &times; 1.0) + (0.50 &times; 1.0) = <span style="color: var(--apple-orange); font-weight: 700;">1.00 &ge; 0.70</span>
+              </div>
+
+              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 10px; line-height: 1.4;">
+                Literature-grounded in Boulton et al. (2023), Mazumdar et al. (2021), and Silva et al. (2024).
+              </p>
+            </div>
+
+            <!-- Col 2: Power Subsystem Math & Autonomy -->
+            <div class="mac-card">
+              <div class="card-header-title">POWER AUTONOMY SIZING</div>
+              <h4 style="font-size: 15px; font-weight: 700; margin-top: 4px;">47.0-Day Continuous Autonomy</h4>
+
+              <table class="spec-table">
+                <tr><td>Daily Energy Budget:</td><td>2.30 Wh/day (96 cycles)</td></tr>
+                <tr><td>Active Consumption:</td><td>1.188 W (10s cycle)</td></tr>
+                <tr><td>Deep-Sleep Consumption:</td><td>0.061 W (890s cycle)</td></tr>
+                <tr><td>LiFePO4 Capacity:</td><td>12.8V 12Ah (153.6 Wh)</td></tr>
+                <tr><td>20W Solar Generation:</td><td>67.5 Wh/day (29x surplus)</td></tr>
+                <tr><td>Net Replenishment:</td><td style="color: var(--apple-green);">15 mins direct sun</td></tr>
+              </table>
+            </div>
+
+            <!-- Col 3: Academic Defense & Beneficiaries -->
+            <div class="mac-card">
+              <div class="card-header-title">UST CICS 3ITC GROUP 1</div>
+              <h4 style="font-size: 15px; font-weight: 700; margin-top: 4px;">Capstone Thesis Information</h4>
+
+              <table class="spec-table">
+                <tr><td>Institution:</td><td>Univ. of Santo Tomas (CICS)</td></tr>
+                <tr><td>Adviser:</td><td>Prof. Eugenia R. Zhuo, DIT</td></tr>
+                <tr><td>Lead Panel:</td><td>Inst. Gabriel Emanuel D. Montano</td></tr>
+                <tr><td>Panelists:</td><td>Prof. N. Estrella, Mr. K. Tino</td></tr>
+                <tr><td>Researchers:</td><td>Morales, Rapada, Hernandez, Eugenio</td></tr>
+                <tr><td>Target Crops:</td><td>Solanaceae Crops</td></tr>
+              </table>
+            </div>
+          </section>
+
+        </div>
+      </main>
+
+    </div>
+
+    <!-- macOS Dialog Modal -->
+    <div class="mac-modal-backdrop" id="macModal" onclick="closeMacModal(event)">
+      <div class="mac-dialog" onclick="event.stopPropagation()">
+        <div class="dialog-header">
+          <h3 style="font-size: 16px; font-weight: 700;" id="modalDialogTitle">Detailed Telemetry</h3>
+          <button class="tb-btn" style="padding: 0 8px;" onclick="closeMacModalDirect()">✕</button>
+        </div>
+        <div class="dialog-body" id="modalDialogContent">
+          <!-- Dynamic Content -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // --- Presentation Scenarios State ---
+    const macScenarios = {
+      high: {
+        title: "CRITICAL OUTBREAK ALERT: Late Blight (SV = 3) & Bacterial Wilt",
+        desc: "Adapted Wallin Severity Index has reached Level 3 due to 11.8 hours of continuous foliar leaf wetness in the 12°C–22°C conducive range. Subsurface root saturation (78.4% VWC) concurrently triggers high bacterial proliferation risk.",
+        bannerClass: "danger-mode",
+        glyphColor: "var(--apple-red)",
+        wallinText: "SV = 3 (Red)",
+        hydroText: "R_BW = 0.80",
+        lwd: 11.8,
+        airTemp: 21.4,
+        airRh: 94.2,
+        soilM: 78.4,
+        soilT: 29.8,
+        lwdBadge: "Critical (>=10h)",
+        lwdBadgeClass: "badge-red",
+        rhBadge: "94.2% RH",
+        soilMBadge: "78.4% VWC",
+        soilTBadge: "29.8°C",
+        act1Title: "Immediate Canopy Aeration",
+        act1Desc: "Perform selective suckering and prune lower senescent leaves to disrupt laminar stagnant air and speed up foliar drying.",
+        act2Title: "Halt Overhead & Furrow Irrigation",
+        act2Desc: "Root-zone soil moisture is at 78.4% (waterlogged). Ceasing irrigation eliminates bacterial vascular mobility.",
+        act3Title: "Apply Protective Bio-Fungicides",
+        act3Desc: "Stage and apply copper hydroxide or Bacillus subtilis within 12 hours before mycelial penetration begins."
+      },
+      moderate: {
+        title: "ADVISORY WARNING: Microclimate Favorability Developing",
+        desc: "Leaf wetness duration has accumulated to 7.4 hours. Ambient temperature (19.8°C) is within the optimal zoospore formation range. Caution is advised against excessive twilight irrigation.",
+        bannerClass: "warning-mode",
+        glyphColor: "var(--apple-orange)",
+        wallinText: "SV = 1 (Yellow)",
+        hydroText: "R_BW = 0.60",
+        lwd: 7.4,
+        airTemp: 19.8,
+        airRh: 88.5,
+        soilM: 64.2,
+        soilT: 26.5,
+        lwdBadge: "Warning (Rising)",
+        lwdBadgeClass: "badge-amber",
+        rhBadge: "88.5% RH",
+        soilMBadge: "64.2% VWC",
+        soilTBadge: "26.5°C",
+        act1Title: "Inspect Lower Canopy Shading",
+        act1Desc: "Check density of foliage and remove inter-row weeds to permit direct solar drying of inner leaves.",
+        act2Title: "Regulate Irrigation Duration",
+        act2Desc: "Limit irrigation to morning hours to avoid extending the nocturnal dew period past 10 hours.",
+        act3Title: "Prepare Preventative Fungicide Stores",
+        act3Desc: "Inventory copper-based protective barriers in the farm store for prompt deployment if rain persists."
+      },
+      safe: {
+        title: "MICROCLIMATE NORMAL: All Parameters Within Safe Baseline",
+        desc: "Leaf surfaces are completely dry (1.2h). Volumetric soil moisture is at 52.0% (optimal field capacity). Environmental conditions are entirely unfavorable for pathogen multiplication.",
+        bannerClass: "safe-mode",
+        glyphColor: "var(--apple-green)",
+        wallinText: "SV = 0 (Normal)",
+        hydroText: "R_BW = 0.20",
+        lwd: 1.2,
+        airTemp: 26.8,
+        airRh: 64.0,
+        soilM: 52.0,
+        soilT: 23.4,
+        lwdBadge: "Optimal (Dry)",
+        lwdBadgeClass: "badge-green",
+        rhBadge: "64.0% RH",
+        soilMBadge: "52.0% VWC",
+        soilTBadge: "23.4°C",
+        act1Title: "Routine Field Scouting",
+        act1Desc: "Conduct scheduled twice-weekly visual checks for insect vectors (aphids, thrips) and plant vigor.",
+        act2Title: "Standard Fertigation Schedule",
+        act2Desc: "Maintain balanced N-P-K nutrient drip line delivery per agronomic growth stage recommendations.",
+        act3Title: "No Chemical Sprays Indicated",
+        act3Desc: "Microclimate conditions preclude zoosporangial discharge and vascular bacterial infection."
+      }
+    };
+
+    let activeScenario = 'high';
+
+    function applyScenario(key) {
+      activeScenario = key;
+      const data = macScenarios[key];
+
+      // Update Toolbar buttons
+      document.querySelectorAll('.scen-btn').forEach(b => b.classList.remove('active'));
+      const btn = document.querySelector(`.scen-btn.${key === 'high' ? 'danger' : key === 'moderate' ? 'warning' : 'safe'}`);
+      if (btn) btn.classList.add('active');
+
+      // Update Banner
+      const banner = document.getElementById('desktopHeroBanner');
+      banner.className = `hero-alert-banner ${data.bannerClass}`;
+      document.getElementById('desktopHeroTitle').innerText = data.title;
+      document.getElementById('desktopHeroDesc').innerText = data.desc;
+      document.getElementById('tagWallinVal').innerText = data.wallinText;
+      document.getElementById('tagHydroVal').innerText = data.hydroText;
+
+      // Update Metric Tiles
+      document.getElementById('valLwd').innerHTML = `${data.lwd} <span>hrs</span>`;
+      document.getElementById('badgeLwd').innerText = data.lwdBadge;
+      document.getElementById('badgeLwd').className = `tile-badge ${data.lwdBadgeClass}`;
+
+      document.getElementById('valAirTemp').innerHTML = `${data.airTemp} <span>°C</span>`;
+      document.getElementById('badgeRh').innerText = data.rhBadge;
+
+      document.getElementById('valSoilM').innerHTML = `${data.soilM} <span>%</span>`;
+      document.getElementById('badgeSoilM').innerText = data.soilMBadge;
+
+      document.getElementById('valSoilT').innerHTML = `${data.soilT} <span>°C</span>`;
+      document.getElementById('badgeSoilT').innerText = data.soilTBadge;
+
+      // Update Actions
+      document.getElementById('actTitle1').innerText = data.act1Title;
+      document.getElementById('actDesc1').innerText = data.act1Desc;
+      document.getElementById('actTitle2').innerText = data.act2Title;
+      document.getElementById('actDesc2').innerText = data.act2Desc;
+      document.getElementById('actTitle3').innerText = data.act3Title;
+      document.getElementById('actDesc3').innerText = data.act3Desc;
+
+      // Re-draw Canvas
+      drawMacCanvas();
+    }
+
+    // --- Live Hardware Connection & Telemetry Ingestion ---
+    let desktopLiveActive = true;
+
+    function toggleDesktopLiveHardware() {
+      if (window.SolanaHardware) {
+        desktopLiveActive = window.SolanaHardware.toggleLive();
+        if (desktopLiveActive) {
+          document.querySelectorAll('.scen-btn').forEach(b => b.classList.remove('active'));
+          const liveBtn = document.getElementById('liveHwBtn');
+          if (liveBtn) liveBtn.classList.add('active');
+        } else {
+          applyScenario(activeScenario);
+        }
+      }
+    }
+
+    function updateDesktopWithLiveTelemetry(raw) {
+      if (!desktopLiveActive) return;
+
+      const airT = parseFloat(raw.air_temperature ?? 24.0).toFixed(1);
+      const airRH = parseFloat(raw.relative_humidity ?? 70.0).toFixed(1);
+      const soilT = parseFloat(raw.soil_temperature ?? 25.0).toFixed(1);
+      const soilM = parseFloat(raw.soil_moisture ?? 55.0).toFixed(1);
+      const lwd = parseFloat(raw.leaf_wetness_hours ?? 0.0).toFixed(1);
+      
+      const analysis = raw.disease_analysis || {};
+      const lb = analysis.late_blight || { severity_value: 0, risk_level: 'LOW' };
+      const bw = analysis.bacterial_wilt || { risk_score: 0.2, risk_level: 'LOW' };
+      const adv = analysis.advisory || {
+        status_tier: 'safe-theme',
+        badge_text: 'OPTIMAL CONDITIONS',
+        headline: 'Normal Microclimate',
+        description: 'Sensors active and within baseline.',
+        advisories: []
+      };
+
+      // Update Banner
+      const banner = document.getElementById('desktopHeroBanner');
+      if (banner) {
+        banner.className = `hero-alert-banner ${lb.risk_level === 'HIGH' || bw.risk_level === 'HIGH' ? 'danger-banner' : lb.risk_level === 'MODERATE' || bw.risk_level === 'MODERATE' ? 'warning-banner' : 'safe-banner'}`;
+        document.getElementById('desktopHeroTitle').innerText = adv.headline || 'Sensor Telemetry Active';
+        document.getElementById('desktopHeroDesc').innerText = adv.description || `Field Node ${raw.node_id || '01'} live stream`;
+        document.getElementById('tagWallinVal').innerText = `SV ${lb.severity_value} (${lb.risk_level})`;
+        document.getElementById('tagHydroVal').innerText = `Score ${typeof bw.risk_score === 'number' ? bw.risk_score.toFixed(2) : bw.risk_score} (${bw.risk_level})`;
+      }
+
+      // Update Metric Tiles
+      document.getElementById('valLwd').innerHTML = `${lwd} <span>hrs</span>`;
+      const badgeLwd = document.getElementById('badgeLwd');
+      if (badgeLwd) {
+        badgeLwd.innerText = lb.risk_level === 'HIGH' ? 'Critical Wetness' : lb.risk_level === 'MODERATE' ? 'Warning Accumulation' : 'Optimal (Dry)';
+        badgeLwd.className = `tile-badge ${lb.risk_level === 'HIGH' ? 'badge-red' : lb.risk_level === 'MODERATE' ? 'badge-amber' : 'badge-green'}`;
+      }
+
+      document.getElementById('valAirTemp').innerHTML = `${airT} <span>°C</span>`;
+      document.getElementById('badgeRh').innerText = `${airRH}% RH`;
+
+      document.getElementById('valSoilM').innerHTML = `${soilM} <span>%</span>`;
+      document.getElementById('badgeSoilM').innerText = `${soilM}% VWC`;
+
+      document.getElementById('valSoilT').innerHTML = `${soilT} <span>°C</span>`;
+      document.getElementById('badgeSoilT').innerText = `${soilT}°C`;
+
+      // Update Advisories
+      if (adv.advisories && adv.advisories.length >= 3) {
+        document.getElementById('actTitle1').innerText = adv.advisories[0].title;
+        document.getElementById('actDesc1').innerText = adv.advisories[0].desc;
+        document.getElementById('actTitle2').innerText = adv.advisories[1].title;
+        document.getElementById('actDesc2').innerText = adv.advisories[1].desc;
+        document.getElementById('actTitle3').innerText = adv.advisories[2].title;
+        document.getElementById('actDesc3').innerText = adv.advisories[2].desc;
+      }
+
+      // Re-draw Canvas
+      drawMacCanvas();
+    }
+
+    if (window.SolanaHardware) {
+      window.SolanaHardware.onTelemetry((record) => {
+        updateDesktopWithLiveTelemetry(record);
+      });
+      window.SolanaHardware.onStatusChange((status) => {
+        if (status === 'connected') {
+          desktopLiveActive = true;
+          document.querySelectorAll('.scen-btn').forEach(b => b.classList.remove('active'));
+          const liveBtn = document.getElementById('liveHwBtn');
+          if (liveBtn) liveBtn.classList.add('active');
+        }
+      });
+    }
+
+    // --- High DPI Spline Canvas Drawing for macOS Dashboard ---
+    function drawMacCanvas() {
+      const canvas = document.getElementById('macMainCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const w = rect.width;
+      const h = rect.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      const isHigh = activeScenario === 'high';
+      const isMod = activeScenario === 'moderate';
+
+      const points = isHigh
+        ? [1.2, 1.8, 3.2, 4.5, 6.0, 7.8, 9.4, 10.1, 11.0, 11.8]
+        : isMod
+        ? [0.4, 0.8, 1.6, 2.5, 3.8, 4.9, 5.8, 6.3, 7.0, 7.4]
+        : [0.2, 0.3, 0.5, 0.8, 1.0, 1.2, 1.1, 0.9, 0.6, 0.3];
+
+      const minVal = 0;
+      const maxVal = 14;
+
+      const coords = points.map((val, i) => {
+        const x = (i / (points.length - 1)) * (w - 40) + 20;
+        const y = h - ((val - minVal) / (maxVal - minVal)) * (h - 50) - 25;
+        return { x, y };
+      });
+
+      // Threshold line at 10h
+      const threshY = h - ((10.0 - minVal) / (maxVal - minVal)) * (h - 50) - 25;
+      ctx.beginPath();
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = "rgba(255, 69, 58, 0.7)";
+      ctx.lineWidth = 1.5;
+      ctx.moveTo(20, threshY);
+      ctx.lineTo(w - 20, threshY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Label threshold
+      ctx.fillStyle = "rgba(255, 69, 58, 0.85)";
+      ctx.font = "600 11px -apple-system, sans-serif";
+      ctx.fillText("CRITICAL INFECTION THRESHOLD (10.0h)", 25, threshY - 6);
+
+      // Area gradient
+      const strokeColor = isHigh ? "#FF453A" : isMod ? "#FF9F0A" : "#30D158";
+      const gStart = isHigh ? "rgba(255, 69, 58, 0.35)" : isMod ? "rgba(255, 159, 10, 0.35)" : "rgba(48, 209, 88, 0.35)";
+
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, gStart);
+      grad.addColorStop(1, "rgba(0, 0, 0, 0.0)");
+
+      ctx.beginPath();
+      ctx.moveTo(coords[0].x, coords[0].y);
+      for (let i = 0; i < coords.length - 1; i++) {
+        const xc = (coords[i].x + coords[i + 1].x) / 2;
+        const yc = (coords[i].y + coords[i + 1].y) / 2;
+        ctx.quadraticCurveTo(coords[i].x, coords[i].y, xc, yc);
+      }
+      ctx.quadraticCurveTo(
+        coords[coords.length - 1].x,
+        coords[coords.length - 1].y,
+        coords[coords.length - 1].x,
+        coords[coords.length - 1].y
+      );
+      ctx.lineTo(coords[coords.length - 1].x, h);
+      ctx.lineTo(coords[0].x, h);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Stroke line
+      ctx.beginPath();
+      ctx.moveTo(coords[0].x, coords[0].y);
+      for (let i = 0; i < coords.length - 1; i++) {
+        const xc = (coords[i].x + coords[i + 1].x) / 2;
+        const yc = (coords[i].y + coords[i + 1].y) / 2;
+        ctx.quadraticCurveTo(coords[i].x, coords[i].y, xc, yc);
+      }
+      ctx.quadraticCurveTo(
+        coords[coords.length - 1].x,
+        coords[coords.length - 1].y,
+        coords[coords.length - 1].x,
+        coords[coords.length - 1].y
+      );
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // End point circle
+      const last = coords[coords.length - 1];
+      ctx.beginPath();
+      ctx.arc(last.x, last.y, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = strokeColor;
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
+    }
+
+    function setChartTime(time, btn) {
+      document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      drawMacCanvas();
+    }
+
+    const desktopPlots = [
+      {
+        name: "Solanaceae Crop Plot",
+        title: "Microclimate & Pathology Dashboard — Solanaceae Crop Field",
+        sub: "Brgy. San Jose, Field 3 • Solanaceae Crops • Autonomous Sensing Node 01",
+        act1Title: "Canopy Airflow & De-leafing",
+        act1Desc: "Prune lower senescent leaves and thin dense canopy foliage to disrupt stagnant humid microclimates and accelerate foliar drying.",
+        act2Title: "Suspend Overhead & Furrow Irrigation",
+        act2Desc: "Root-zone soil moisture is at 78.4% (waterlogged). Halting irrigation prevents bacterial wilt mobility in the rhizosphere.",
+        act3Title: "Apply Protective Prophylactic Sprays",
+        act3Desc: "Stage and apply copper hydroxide or Bacillus subtilis bio-fungicide within 12 hours before fungal spore penetration."
+      }
+    ];
+
+    function switchPlot(index = 0, btn = null) {
+      if (btn) {
+        document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      const p = desktopPlots[0];
+      if (p) {
+        document.getElementById('desktopHeaderTitle').innerText = p.title;
+        document.querySelector('.toolbar-title-wrap p').innerText = p.sub;
+        if (activeScenario === 'high') {
+          document.getElementById('actTitle1').innerText = p.act1Title;
+          document.getElementById('actDesc1').innerText = p.act1Desc;
+          document.getElementById('actTitle2').innerText = p.act2Title;
+          document.getElementById('actDesc2').innerText = p.act2Desc;
+          document.getElementById('actTitle3').innerText = p.act3Title;
+          document.getElementById('actDesc3').innerText = p.act3Desc;
+        }
+      }
+    }
+
+    function selectNav(item, key) {
+      document.querySelectorAll('.nav-menu-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    }
+
+    function toggleMacTheme() {
+      const body = document.body;
+      if (body.classList.contains('macos-dark')) {
+        body.classList.remove('macos-dark');
+        body.classList.add('macos-light');
+      } else {
+        body.classList.remove('macos-light');
+        body.classList.add('macos-dark');
+      }
+      drawMacCanvas();
+    }
+
+    function toggleFullscreenWindow() {
+      const win = document.querySelector('.macos-window');
+      win.style.maxWidth = win.style.maxWidth === '100%' ? '1540px' : '100%';
+      win.style.maxHeight = win.style.maxHeight === '100%' ? '940px' : '100%';
+      setTimeout(drawMacCanvas, 100);
+    }
+
+    // Modal
+    function openMacModal(type) {
+      const modal = document.getElementById('macModal');
+      const title = document.getElementById('modalDialogTitle');
+      const content = document.getElementById('modalDialogContent');
+
+      if (type === 'lwd') {
+        title.innerText = "IP68 Dielectric Leaf Wetness Grid";
+        content.innerHTML = `
+          <p><strong>Hardware Link:</strong> Industrial dielectric leaf wetness probe communicating via RS485 Modbus-RTU into ESP32 Hardware Serial UART2 (GPIO 16/17) over a 3.3V MAX485 transceiver.</p>
+          <p><strong>Pathology Significance:</strong> <em>Phytophthora infestans</em> zoospores require water films &ge; 10 continuous hours to initiate encystment and stomatal germ tube penetration.</p>
+        `;
+      } else if (type === 'ambient') {
+        title.innerText = "Canopy Ambient Temp & Humidity (DHT22)";
+        content.innerHTML = `
+          <p><strong>Radiation Shielding:</strong> Housed inside a louvered Stevenson Radiation Screen at canopy height to ensure pure ambient atmospheric telemetry isolated from direct solar heating.</p>
+          <p><strong>Wallin Rule Concurrence:</strong> When leaf wetness is &ge; 10 hours, concurrent RH &ge; 90% elevates the infection threat to Severity Value (SV) 3.</p>
+        `;
+      } else if (type === 'soil_m') {
+        title.innerText = "Capacitive Soil Moisture Probe v1.2";
+        content.innerHTML = `
+          <p><strong>Dielectric Measurement:</strong> Inserted at 10cm root zone depth. High frequency dielectric measurement prevents corrosion encountered in resistive copper probes.</p>
+          <p><strong>Bacterial Wilt Driver:</strong> Soil moisture &ge; 75% VWC saturates macro-pores, enabling chemotactic bacterial motility of <em>Ralstonia pseudosolanacearum</em>.</p>
+        `;
+      } else if (type === 'soil_t') {
+        title.innerText = "Dallas DS18B20 Soil Temperature Probe";
+        content.innerHTML = `
+          <p><strong>1-Wire Bus Interface:</strong> Waterproof stainless steel probe inserted at 10cm depth connected to GPIO 4 with a 4.7k&Omega; pullup resistor.</p>
+          <p><strong>Hydrothermal Multiplication:</strong> Soil temperatures between 28°C–35°C trigger the peak multiplication factor for bacterial wilt.</p>
+        `;
+      } else {
+        title.innerText = "Agronomic Decision Support Protocols";
+        content.innerHTML = `
+          <p><strong>Pre-Symptomatic Interventions:</strong></p>
+          <ol style="padding-left: 20px; display: flex; flex-direction: column; gap: 6px;">
+            <li>Aerate canopy through selective leaf suckering and pruning.</li>
+            <li>Cease flood/furrow irrigation immediately to drain root zone.</li>
+            <li>Apply copper hydroxide or protective bio-fungicides within 12h.</li>
+          </ol>
+        `;
+      }
+      modal.classList.add('open');
+    }
+
+    function closeMacModalDirect() {
+      document.getElementById('macModal').classList.remove('open');
+    }
+
+    function closeMacModal(e) {
+      if (e.target.id === 'macModal') closeMacModalDirect();
+    }
+
+    window.addEventListener('load', () => {
+      applyScenario('high');
+      drawMacCanvas();
+    });
+
+    window.addEventListener('resize', () => {
+      drawMacCanvas();
+    });
+  </script>
+</body>
+</html>

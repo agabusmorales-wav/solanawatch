@@ -1,0 +1,19 @@
+{
+  "name": "solanawatch",
+  "version": "1.0.0",
+  "description": "SolanaWatch: IoT Microclimatic Disease Early Warning & Decision Support System",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "build": "echo 'Ready for deployment'"
+  },
+  "keywords": ["iot", "esp32", "solanaceae", "plant-pathology", "disease-warning", "turso", "vercel"],
+  "author": "SolanaWatch Team - UST CICS",
+  "license": "MIT",
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}
