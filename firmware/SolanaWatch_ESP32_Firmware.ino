@@ -38,8 +38,8 @@
 // 1. WI-FI & CLOUD BACKEND CONFIGURATION
 // ==============================================================================
 // Set your Wi-Fi SSID and Password (2.4 GHz only; can use phone hotspot or pocket Wi-Fi)
-const char* WIFI_SSID     = "YOUR_WIFI_NAME";        // <-- Enter Wi-Fi Name
-const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";    // <-- Enter Wi-Fi Password
+const char* WIFI_SSID     = "Loading...";
+const char* WIFI_PASSWORD = "BingChilling101";
 
 // SolanaWatch Telemetry Endpoint URL:
 // - FOR VERCEL DEPLOYMENT: "https://your-app-name.vercel.app/api/telemetry"
@@ -335,11 +335,11 @@ void loop() {
   }
 
   // Handle Wi-Fi Auto-Reconnect in the background
-  if (strcmp(WIFI_SSID, "YOUR_WIFI_NAME") != 0) {
-    if (WiFi.status() != WL_CONNECTED && currentMillis % 30000 == 0) {
-      Serial.println("[Wi-Fi] Reconnecting...");
-      WiFi.reconnect();
-    }
+  static unsigned long lastWifiReconnectAttempt = 0;
+  if (WiFi.status() != WL_CONNECTED && (currentMillis - lastWifiReconnectAttempt >= 30000)) {
+    lastWifiReconnectAttempt = currentMillis;
+    Serial.println("[Wi-Fi] Reconnecting...");
+    WiFi.reconnect();
   }
 
   delay(50);
