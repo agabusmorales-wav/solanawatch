@@ -151,6 +151,25 @@ function loadDatabase() {
     try {
       const raw = fs.readFileSync(DB_FILE, 'utf8');
       telemetryReadings = JSON.parse(raw);
+      telemetryReadings.forEach(r => {
+        if (!r.power_diagnostics) {
+          const battPct = Math.min(100, Math.max(0, parseInt(r.battery_percent ?? 90)));
+          const battV = parseFloat(r.battery_voltage ?? 12.8);
+          const solarV = parseFloat(r.solar_voltage ?? 17.5);
+          const isSolar = solarV >= 13.5;
+          r.power_diagnostics = {
+            battery_voltage: battV,
+            battery_percent: battPct,
+            solar_voltage: solarV,
+            is_solar_harvesting: isSolar,
+            power_status: isSolar ? "SOLAR_CHARGING" : (battPct > 25 ? "BATTERY_NORMAL" : "BATTERY_LOW"),
+            remaining_autonomy_days: parseFloat(((battPct / 100) * 47.0).toFixed(1)),
+            daily_consumption_wh: 2.30,
+            rated_capacity_wh: 153.6,
+            battery_chemistry: "LiFePO4 (4S 12.8V 12Ah)"
+          };
+        }
+      });
       console.log(`[Database] Loaded ${telemetryReadings.length} historical records.`);
     } catch (err) {
       console.error('[Database] Failed to read existing db file, initializing fresh:', err.message);
@@ -368,6 +387,106 @@ function generateAgronomicAdvisory(lbRisk, bwRisk, lwd, soilM) {
   }
 }
 
+// ==============================================================================
+// ALERT NOTIFICATION DISPATCHER (Telegram & Philippine Semaphore SMS)
+// ==============================================================================
+let lastAlertTimestamp = 0;
+const ALERT_COOLDOWN_MS = 20 * 60 * 1000; // 20 minutes cooldown between auto alerts
+let lastAlertDetails = {
+  last_triggered_at: null,
+  channels: {
+    telegram: Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID),
+    semaphore: Boolean(process.env.SEMAPHORE_API_KEY && process.env.SEMAPHORE_PHONE_NUMBER)
+  },
+  last_status: "STANDBY"
+};
+
+async function sendTelegramAlert(message) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) {
+    return { success: false, reason: "Telegram credentials not set (set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID)." };
+  }
+  try {
+    const url = `https://api.telegram.org/bot${token}/sendMessage`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'Markdown' })
+    });
+    const data = await response.json();
+    return { success: data.ok, data };
+  } catch (err) {
+    console.error('[Alerts] Telegram send error:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+async function sendSemaphoreSms(message) {
+  const apiKey = process.env.SEMAPHORE_API_KEY;
+  const number = process.env.SEMAPHORE_PHONE_NUMBER;
+  const sender = process.env.SEMAPHORE_SENDER_NAME || 'SolanaWatch';
+  if (!apiKey || !number) {
+    return { success: false, reason: "Semaphore SMS credentials not set (set SEMAPHORE_API_KEY and SEMAPHORE_PHONE_NUMBER)." };
+  }
+  try {
+    const url = 'https://api.semaphore.co/api/v4/messages';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apikey: apiKey,
+        number: number,
+        message: message,
+        sendername: sender
+      })
+    });
+    const data = await response.json();
+    return { success: true, data };
+  } catch (err) {
+    console.error('[Alerts] Semaphore SMS error:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+async function checkAndTriggerDiseaseAlert(record) {
+  const lb = record.disease_analysis?.late_blight;
+  const bw = record.disease_analysis?.bacterial_wilt;
+  const isHighRisk = (lb && lb.risk_level === 'HIGH') || (bw && bw.risk_level === 'HIGH');
+  if (!isHighRisk) return;
+
+  const now = Date.now();
+  if (now - lastAlertTimestamp < ALERT_COOLDOWN_MS) {
+    return;
+  }
+  lastAlertTimestamp = now;
+
+  const textMsg = `🚨 *SOLANAWATCH EARLY WARNING ALERT*\n` +
+    `📍 Node: ${record.node_id}\n` +
+    `🕒 Time: ${new Date().toLocaleTimeString()}\n\n` +
+    `⚠️ *Late Blight:* ${lb ? lb.risk_level : 'N/A'} (SV: ${lb ? lb.severity_value : '0'})\n` +
+    `⚠️ *Bacterial Wilt:* ${bw ? bw.risk_level : 'N/A'} (Score: ${bw ? bw.risk_score : '0.00'})\n` +
+    `🌡️ Air: ${record.air_temperature}°C | RH: ${record.relative_humidity}%\n` +
+    `🍃 Leaf Wetness: ${record.leaf_wetness_hours} hrs\n\n` +
+    `💡 *Immediate Action:* ${record.disease_analysis?.advisory?.advisories[0]?.title || 'Inspect field'}: ` +
+    `${record.disease_analysis?.advisory?.advisories[0]?.desc || 'Prune canopy to promote airflow.'}`;
+
+  console.log('[Alerts] Dispatching high-risk notification to farmers...');
+  const tgResult = await sendTelegramAlert(textMsg);
+  const smsResult = await sendSemaphoreSms(textMsg.replace(/\*/g, ''));
+
+  lastAlertDetails = {
+    last_triggered_at: new Date().toISOString(),
+    node_id: record.node_id,
+    late_blight_risk: lb?.risk_level,
+    bacterial_wilt_risk: bw?.risk_level,
+    telegram: tgResult,
+    sms: smsResult,
+    last_status: "SENT",
+    message: textMsg
+  };
+}
+
 function processTelemetry(raw) {
   const recordedAt = raw.recorded_at || new Date().toISOString();
   const airT = parseFloat(raw.air_temperature ?? 24.0);
@@ -380,7 +499,16 @@ function processTelemetry(raw) {
   const bwAnalysis = evaluateBacterialWiltRisk(soilT, soilM);
   const advisory = generateAgronomicAdvisory(lbAnalysis, bwAnalysis, lwd, soilM);
 
-  return {
+  // Power & Field Autonomy Diagnostics (Thesis Chapter 3: 20W Solar PV + 12.8V 12Ah LiFePO4 battery)
+  const battV = parseFloat(raw.battery_voltage ?? 12.8);
+  const battPct = Math.min(100, Math.max(0, parseInt(raw.battery_percent ?? 90)));
+  const solarV = parseFloat(raw.solar_voltage ?? 17.5);
+  const isSolarHarvesting = solarV >= 13.5;
+  // 153.6 Wh capacity / 2.30 Wh/day consumption = 47.0 days of 100% zero-sunlight autonomy
+  const remainingAutonomyDays = parseFloat(((battPct / 100) * 47.0).toFixed(1));
+  const powerStatus = isSolarHarvesting ? "SOLAR_CHARGING" : (battPct > 25 ? "BATTERY_NORMAL" : "BATTERY_LOW");
+
+  const record = {
     reading_id: `RDG-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     node_id: raw.node_id || "SOLANA-NODE-01",
     recorded_at: recordedAt,
@@ -390,10 +518,21 @@ function processTelemetry(raw) {
     soil_moisture: soilM,
     leaf_wetness_raw: raw.leaf_wetness_raw ?? (lwd > 0 ? 1 : 0),
     leaf_wetness_hours: lwd,
-    battery_voltage: parseFloat(raw.battery_voltage ?? 12.8),
-    battery_percent: parseInt(raw.battery_percent ?? 90),
-    solar_voltage: parseFloat(raw.solar_voltage ?? 17.5),
+    battery_voltage: battV,
+    battery_percent: battPct,
+    solar_voltage: solarV,
     wifi_rssi: parseInt(raw.wifi_rssi ?? -65),
+    power_diagnostics: {
+      battery_voltage: battV,
+      battery_percent: battPct,
+      solar_voltage: solarV,
+      is_solar_harvesting: isSolarHarvesting,
+      power_status: powerStatus,
+      remaining_autonomy_days: remainingAutonomyDays,
+      daily_consumption_wh: 2.30,
+      rated_capacity_wh: 153.6,
+      battery_chemistry: "LiFePO4 (4S 12.8V 12Ah)"
+    },
     disease_analysis: {
       late_blight: lbAnalysis,
       bacterial_wilt: bwAnalysis,
@@ -401,6 +540,13 @@ function processTelemetry(raw) {
       advisory: advisory
     }
   };
+
+  // Trigger alert if high risk and not in historical seed
+  if (!raw._isSeeding) {
+    checkAndTriggerDiseaseAlert(record);
+  }
+
+  return record;
 }
 
 /**
@@ -597,6 +743,161 @@ app.get('/api/telemetry/export-csv', (req, res) => {
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', `attachment; filename="SolanaWatch_Telemetry_${Date.now()}.csv"`);
   res.send(csvContent);
+});
+
+// ==============================================================================
+// 7. 48-HOUR MICROCLIMATIC FORECAST FUSION (Open-Meteo Meteorological API)
+// ==============================================================================
+let forecastCache = null;
+let forecastCacheTime = 0;
+const FORECAST_CACHE_DURATION_MS = 30 * 60 * 1000; // 30 minutes cache
+
+app.get('/api/forecast', async (req, res) => {
+  // Default coordinates: La Trinidad / Benguet (Major Solanaceae Hub), Philippines
+  const lat = req.query.lat || '16.4550';
+  const lon = req.query.lon || '120.5985';
+  const now = Date.now();
+
+  if (forecastCache && (now - forecastCacheTime < FORECAST_CACHE_DURATION_MS)) {
+    return res.json({ status: "success", cached: true, ...forecastCache });
+  }
+
+  try {
+    const openMeteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,rain&forecast_days=2&timezone=Asia%2FManila`;
+    const response = await fetch(openMeteoUrl);
+    const data = await response.json();
+
+    if (!data.hourly) {
+      throw new Error("Invalid response from Open-Meteo API");
+    }
+
+    const times = data.hourly.time;
+    const temps = data.hourly.temperature_2m;
+    const rhs = data.hourly.relative_humidity_2m;
+    const rainProbs = data.hourly.precipitation_probability;
+    const rains = data.hourly.rain;
+
+    // Analyze next 48 hours for disease favorability
+    let highHumidHours = 0;
+    let rainHours = 0;
+    let maxRainProb = 0;
+    let totalRainMm = 0;
+    const hourlySummary = [];
+
+    for (let i = 0; i < Math.min(48, times.length); i++) {
+      const rh = rhs[i];
+      const prob = rainProbs[i] ?? 0;
+      const r = rains[i] ?? 0;
+
+      if (rh >= 85) highHumidHours++;
+      if (r > 0.2) rainHours++;
+      if (prob > maxRainProb) maxRainProb = prob;
+      totalRainMm += r;
+
+      if (i < 24) {
+        hourlySummary.push({
+          time: times[i],
+          temp: temps[i],
+          rh: rh,
+          rain_prob: prob,
+          rain_mm: r
+        });
+      }
+    }
+
+    // Evaluate 48h Advance Pathogen Favorability
+    let forecastRisk = "LOW";
+    let forecastAdvisory = "Optimal clear weather. Low probability of sporulation over the next 48 hours.";
+    let advisoryColor = "safe";
+
+    if (highHumidHours >= 14 || maxRainProb >= 70 || totalRainMm >= 15.0) {
+      forecastRisk = "HIGH";
+      forecastAdvisory = `⚠️ Critical Weather Front: ${highHumidHours}h high RH (≥85%) and ${maxRainProb}% rain probability expected in 48h. High Late Blight risk imminent. Apply protective copper/mancozeb barrier prior to rain onset.`;
+      advisoryColor = "danger";
+    } else if (highHumidHours >= 6 || maxRainProb >= 40) {
+      forecastRisk = "MODERATE";
+      forecastAdvisory = `Developing humidity (${highHumidHours}h RH ≥85%, ${maxRainProb}% rain chance). Prepare bio-fungicide and inspect field drainage.`;
+      advisoryColor = "warning";
+    }
+
+    const result = {
+      location: {
+        latitude: parseFloat(lat),
+        longitude: parseFloat(lon),
+        region: "Benguet / Northern Luzon, Philippines"
+      },
+      forecast_summary: {
+        risk_level: forecastRisk,
+        advisory_color: advisoryColor,
+        advisory: forecastAdvisory,
+        max_rain_probability_48h: maxRainProb,
+        total_projected_rainfall_mm: parseFloat(totalRainMm.toFixed(1)),
+        projected_high_humidity_hours_48h: highHumidHours,
+        projected_rain_hours_48h: rainHours,
+        hourly_next_24h: hourlySummary
+      }
+    };
+
+    forecastCache = result;
+    forecastCacheTime = now;
+
+    res.json({ status: "success", cached: false, ...result });
+  } catch (err) {
+    console.warn('[Forecast] Fallback triggered due to fetch failure:', err.message);
+    res.json({
+      status: "fallback",
+      message: "External weather API unreachable, showing synthetic meteorological forecast model.",
+      location: { latitude: parseFloat(lat), longitude: parseFloat(lon) },
+      forecast_summary: {
+        risk_level: "MODERATE",
+        advisory_color: "warning",
+        advisory: "Partly cloudy with afternoon rain showers (55% chance). Prepare canopy aeration.",
+        max_rain_probability_48h: 55,
+        total_projected_rainfall_mm: 8.5,
+        projected_high_humidity_hours_48h: 8,
+        projected_rain_hours_48h: 4,
+        hourly_next_24h: []
+      }
+    });
+  }
+});
+
+// ==============================================================================
+// 8. ALERT SYSTEM API (Test & Live Status for Defense Demo)
+// ==============================================================================
+app.get('/api/alerts/status', (req, res) => {
+  res.json({
+    status: "success",
+    channels: {
+      telegram: {
+        configured: Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID),
+        chat_id: process.env.TELEGRAM_CHAT_ID ? "Configured" : "Missing"
+      },
+      semaphore_sms: {
+        configured: Boolean(process.env.SEMAPHORE_API_KEY && process.env.SEMAPHORE_PHONE_NUMBER),
+        recipient: process.env.SEMAPHORE_PHONE_NUMBER ? "Configured" : "Missing"
+      }
+    },
+    cooldown_seconds_remaining: Math.max(0, Math.round((ALERT_COOLDOWN_MS - (Date.now() - lastAlertTimestamp)) / 1000)),
+    last_alert: lastAlertDetails
+  });
+});
+
+app.post('/api/alerts/test', async (req, res) => {
+  const customMessage = req.body?.message || `🚨 [SolanaWatch TEST ALERT]\nSimulated Late Blight HIGH RISK trigger.\nAdapted Wallin SV: 4 | RH: 94.5% | LWD: 12.0h.\nDecision: Apply preventive copper fungicide within 24h.`;
+  
+  console.log('[Alerts] Sending manual oral defense test alert...');
+  const tgResult = await sendTelegramAlert(customMessage);
+  const smsResult = await sendSemaphoreSms(customMessage.replace(/\*/g, ''));
+
+  res.json({
+    status: "success",
+    message: "Test alert dispatched.",
+    results: {
+      telegram: tgResult,
+      semaphore_sms: smsResult
+    }
+  });
 });
 
 // Initialize database

@@ -1615,6 +1615,24 @@
               </div>
             </div>
 
+            <!-- 48-Hour Forecast & Field Autonomy Mobile Card -->
+            <div class="ios-card" style="padding: 14px 16px;">
+              <div class="card-header-row" style="margin-bottom: 8px;">
+                <span class="card-section-title">
+                  🌦️ 48H WEATHER FORECAST FUSION
+                </span>
+                <span id="mForecastBadge" class="tile-badge-status badge-optimal">Clear Skies</span>
+              </div>
+              <p id="mForecastText" style="font-size: 13px; color: var(--label-secondary); line-height: 1.4; margin-bottom: 10px;">
+                Open-Meteo satellite model analyzing rain fronts for Benguet Solanaceae crops...
+              </p>
+              <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: var(--label-secondary); background: var(--fill-tertiary); border-radius: 10px; padding: 8px 12px;">
+                <span>Rain (48h): <strong id="mRainProb" style="color: var(--ios-blue);">--%</strong></span>
+                <span>High RH: <strong id="mHighRhHours" style="color: var(--ios-orange);">--h</strong></span>
+                <span>Autonomy: <strong id="mAutonomyDays" style="color: var(--ios-green);">44.2d</strong></span>
+              </div>
+            </div>
+
             <!-- Apple-Style Interactive 24-Hour Trend Chart -->
             <div class="ios-card chart-card">
               <div class="chart-top-bar">
@@ -2534,6 +2552,12 @@
         battFill.style.width = `${Math.min(100, Math.max(10, raw.battery_percent))}%`;
       }
 
+      // Autonomy and Power Diagnostics (Idea 7)
+      const pwr = raw.power_diagnostics || {};
+      const autonomyDays = pwr.remaining_autonomy_days ?? ((parseInt(raw.battery_percent ?? 90) / 100) * 47.0).toFixed(1);
+      const mAutonomy = document.getElementById('mAutonomyDays');
+      if (mAutonomy) mAutonomy.innerText = `${autonomyDays}d`;
+
       // Formulas in Risk Radar
       document.getElementById('formulaLwdVal').innerText = `${lwd} hrs`;
       document.getElementById('formulaTempVal').innerText = `${airT}°C`;
@@ -2549,6 +2573,29 @@
         document.getElementById('advTitle3').innerText = adv.advisories[2].title;
         document.getElementById('advDesc3').innerText = adv.advisories[2].desc;
       }
+    }
+
+    // --- 48-Hour Weather Forecast Fusion (Open-Meteo API) ---
+    async function loadMobileForecast() {
+      if (!window.SolanaHardware) return;
+      const forecast = await window.SolanaHardware.fetchForecast();
+      if (!forecast || !forecast.forecast_summary) return;
+
+      const fs = forecast.forecast_summary;
+      const mBadge = document.getElementById('mForecastBadge');
+      if (mBadge) {
+        mBadge.innerText = `${fs.risk_level} Risk`;
+        mBadge.className = `tile-badge-status ${fs.advisory_color === 'danger' ? 'badge-critical' : fs.advisory_color === 'warning' ? 'badge-warning' : 'badge-optimal'}`;
+      }
+
+      const mText = document.getElementById('mForecastText');
+      if (mText) mText.innerText = fs.advisory;
+
+      const mRain = document.getElementById('mRainProb');
+      if (mRain) mRain.innerText = `${fs.max_rain_probability_48h}%`;
+
+      const mRh = document.getElementById('mHighRhHours');
+      if (mRh) mRh.innerText = `${fs.projected_high_humidity_hours_48h}h`;
     }
 
     // Register with Hardware Bridge
@@ -2960,6 +3007,7 @@
       setScenario('high');
       drawOverviewChart();
       drawDetailedChart();
+      loadMobileForecast();
     });
 
     // Window resize chart recalculation

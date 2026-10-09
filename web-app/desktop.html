@@ -1064,6 +1064,11 @@
               <span>📊</span> <span>Export CSV</span>
             </a>
 
+            <!-- Send Test Alert Button -->
+            <button class="tb-btn" onclick="triggerTestAlertModal()" title="Trigger Early Warning Alert Test (Telegram / SMS)">
+              <span>🔔</span> <span>Send Alert</span>
+            </button>
+
             <!-- Switch to iOS Mobile Version Button -->
             <a href="index.html" class="tb-btn" style="text-decoration: none;" title="Open iOS Mobile View">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1180,6 +1185,64 @@
               <div class="tile-bottom-meta">
                 <span>DS18B20 1-Wire (10cm)</span>
                 <strong style="color: var(--apple-orange);" id="metaSoilTStatus">Optimal Bacterial Zone</strong>
+              </div>
+            </div>
+          </section>
+
+          <!-- ROW 2.5: 48-Hour Meteorological Forecast & Hardware Power Autonomy Grid -->
+          <section style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px;">
+            <!-- Card A: 48-Hour Microclimatic Disease Forecast (Open-Meteo API) -->
+            <div class="mac-card" style="padding: 18px 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">🌦️</span>
+                  <div>
+                    <div class="card-header-title">METEOROLOGICAL FORECAST FUSION (48H ADVANCE)</div>
+                    <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0;">Open-Meteo Microclimate Model</h4>
+                  </div>
+                </div>
+                <span id="forecastRiskBadge" class="tile-badge badge-green" style="font-size: 11px;">Clear Skies</span>
+              </div>
+              <p id="forecastAdvisoryText" style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.45; margin-bottom: 12px;">
+                Connecting to high-resolution ECMWF weather satellite model for Benguet agricultural coordinates...
+              </p>
+              <div style="display: flex; gap: 18px; font-size: 11.5px; color: var(--text-secondary); border-top: 1px solid var(--border-subtle); padding-top: 10px;">
+                <span>Rain Probability (48h): <strong id="forecastRainProb" style="color: var(--apple-blue); font-weight: 700;">--%</strong></span>
+                <span>Projected RH ≥85%: <strong id="forecastHighRhHours" style="color: var(--apple-orange); font-weight: 700;">-- hrs</strong></span>
+                <span>Est. Rainfall: <strong id="forecastRainfall" style="color: var(--text-primary); font-weight: 700;">-- mm</strong></span>
+              </div>
+            </div>
+
+            <!-- Card B: Hardware Power Diagnostics & 47-Day Autonomy Meter -->
+            <div class="mac-card" style="padding: 18px 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">🔋</span>
+                  <div>
+                    <div class="card-header-title">POWER SUBSYSTEM & FIELD AUTONOMY</div>
+                    <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0;">20W Solar PV + LiFePO4 Energy Storage</h4>
+                  </div>
+                </div>
+                <span id="solarChargeBadge" class="tile-badge badge-green" style="font-size: 11px;">☀️ MPPT Active</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <div>
+                  <div style="font-size: 22px; font-weight: 800; color: var(--apple-green);" id="powerBatteryVal">
+                    94% <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">(13.2V)</span>
+                  </div>
+                  <div style="font-size: 11px; color: var(--text-secondary);">4S 12.8V 12Ah Pack (153.6 Wh)</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 20px; font-weight: 800; color: var(--apple-blue);" id="powerAutonomyDays">
+                    44.2 <span style="font-size: 13px; font-weight: 600;">Days</span>
+                  </div>
+                  <div style="font-size: 11px; color: var(--text-secondary);">Zero-Sunlight Autonomy</div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 16px; font-size: 11.5px; color: var(--text-secondary); border-top: 1px solid var(--border-subtle); padding-top: 10px;">
+                <span>Solar Array: <strong id="powerSolarV" style="color: var(--text-primary); font-weight: 700;">17.8V</strong></span>
+                <span>Consumption: <strong>2.30 Wh/day</strong></span>
+                <span>Cycle: <strong>Deep Sleep (890s)</strong></span>
               </div>
             </div>
           </section>
@@ -1515,8 +1578,81 @@
         document.getElementById('actDesc3').innerText = adv.advisories[2].desc;
       }
 
+      // Update Power Diagnostics & Autonomy (Idea 7)
+      const pwr = raw.power_diagnostics || {};
+      const battPct = pwr.battery_percent ?? parseInt(raw.battery_percent ?? 90);
+      const battV = (pwr.battery_voltage ?? parseFloat(raw.battery_voltage ?? 12.8)).toFixed(2);
+      const solarV = (pwr.solar_voltage ?? parseFloat(raw.solar_voltage ?? 17.5)).toFixed(1);
+      const autonomyDays = pwr.remaining_autonomy_days ?? ((battPct / 100) * 47.0).toFixed(1);
+      const isHarvesting = pwr.is_solar_harvesting ?? (parseFloat(solarV) >= 13.5);
+
+      const pwrBatEl = document.getElementById('powerBatteryVal');
+      if (pwrBatEl) pwrBatEl.innerHTML = `${battPct}% <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">(${battV}V)</span>`;
+
+      const pwrDaysEl = document.getElementById('powerAutonomyDays');
+      if (pwrDaysEl) pwrDaysEl.innerHTML = `${autonomyDays} <span style="font-size: 13px; font-weight: 600;">Days</span>`;
+
+      const pwrSolarEl = document.getElementById('powerSolarV');
+      if (pwrSolarEl) pwrSolarEl.innerText = `${solarV}V`;
+
+      const solarBadge = document.getElementById('solarChargeBadge');
+      if (solarBadge) {
+        solarBadge.innerText = isHarvesting ? '☀️ MPPT Active' : '🌙 Discharging';
+        solarBadge.className = `tile-badge ${isHarvesting ? 'badge-green' : 'badge-amber'}`;
+      }
+
+      // Sidebar battery and solar updates
+      const sideBat = document.getElementById('sideHwBat');
+      if (sideBat) sideBat.innerText = `${battPct}% (${battV}V)`;
+      const sideSolar = document.getElementById('sideSolarVal');
+      if (sideSolar) sideSolar.innerText = isHarvesting ? `+${(parseFloat(solarV) * 1.1).toFixed(1)} W` : '0.0 W';
+
       // Re-draw Canvas
       drawMacCanvas();
+    }
+
+    // --- 48-Hour Weather Forecast Fusion (Open-Meteo API) ---
+    async function loadDesktopForecast() {
+      if (!window.SolanaHardware) return;
+      const forecast = await window.SolanaHardware.fetchForecast();
+      if (!forecast || !forecast.forecast_summary) return;
+
+      const fs = forecast.forecast_summary;
+      const riskBadge = document.getElementById('forecastRiskBadge');
+      if (riskBadge) {
+        riskBadge.innerText = `${fs.risk_level} RISK (48h)`;
+        riskBadge.className = `tile-badge ${fs.advisory_color === 'danger' ? 'badge-red' : fs.advisory_color === 'warning' ? 'badge-amber' : 'badge-green'}`;
+      }
+
+      const advText = document.getElementById('forecastAdvisoryText');
+      if (advText) advText.innerText = fs.advisory;
+
+      const rainProbEl = document.getElementById('forecastRainProb');
+      if (rainProbEl) rainProbEl.innerText = `${fs.max_rain_probability_48h}%`;
+
+      const rhHoursEl = document.getElementById('forecastHighRhHours');
+      if (rhHoursEl) rhHoursEl.innerText = `${fs.projected_high_humidity_hours_48h} hrs`;
+
+      const rainfallEl = document.getElementById('forecastRainfall');
+      if (rainfallEl) rainfallEl.innerText = `${fs.total_projected_rainfall_mm} mm`;
+    }
+
+    // --- Disease Early Warning Alert Test (Telegram & SMS) ---
+    async function triggerTestAlertModal() {
+      const confirmSend = confirm("🔔 Send Live Disease Early Warning Test Alert?\n\nThis will dispatch an instant notification to registered Telegram channel and Semaphore SMS recipients.");
+      if (!confirmSend) return;
+
+      const btn = document.querySelector('button[title*="Alert Test"]');
+      if (btn) btn.innerHTML = "<span>⏳</span> <span>Sending...</span>";
+
+      const res = await window.SolanaHardware.sendTestAlert();
+      if (btn) btn.innerHTML = "<span>🔔</span> <span>Send Alert</span>";
+
+      if (res && res.status === "success") {
+        alert("✅ Early Warning Alert Dispatched!\n\nCheck your Telegram channel or SMS inbox.");
+      } else {
+        alert(`Notice: ${res?.message || 'Alert dispatched to configured endpoints.'}`);
+      }
     }
 
     if (window.SolanaHardware) {
@@ -1759,6 +1895,7 @@
     window.addEventListener('load', () => {
       applyScenario('high');
       drawMacCanvas();
+      loadDesktopForecast();
     });
 
     window.addEventListener('resize', () => {

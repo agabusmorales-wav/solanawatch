@@ -201,6 +201,41 @@
       return false;
     },
 
+    fetchForecast: async function (lat, lon) {
+      try {
+        const url = `${this.apiUrl}/api/forecast?lat=${lat || '16.4550'}&lon=${lon || '120.5985'}`;
+        const resp = await fetch(url);
+        if (resp.ok) {
+          return await resp.json();
+        }
+      } catch (e) {
+        console.warn('[HardwareBridge] Forecast fetch failed:', e.message);
+      }
+      return null;
+    },
+
+    sendTestAlert: async function (msg) {
+      try {
+        const resp = await fetch(`${this.apiUrl}/api/alerts/test`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg })
+        });
+        return await resp.json();
+      } catch (e) {
+        return { status: "error", message: e.message };
+      }
+    },
+
+    getAlertStatus: async function () {
+      try {
+        const resp = await fetch(`${this.apiUrl}/api/alerts/status`);
+        return await resp.json();
+      } catch (e) {
+        return null;
+      }
+    },
+
     saveSettings: function (newUrl, newInterval) {
       if (newUrl) {
         this.apiUrl = newUrl.trim().replace(/\/$/, '');
