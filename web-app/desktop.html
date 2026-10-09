@@ -6,6 +6,7 @@
   <title>SolanaWatch — macOS / PC Agronomic Decision Support Dashboard</title>
 
   <!-- Apple System Fonts & Fallbacks -->
+  <link rel="manifest" href="/manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -1057,6 +1058,11 @@
             <button class="tb-btn" onclick="window.SolanaHardware.openModal()" title="Hardware Link Configuration">
               <span>📡</span> <span id="hwToolbarBadge">HW Link</span>
             </button>
+
+            <!-- Export CSV Dataset Button -->
+            <a href="/api/telemetry/export-csv" download class="tb-btn" style="text-decoration: none;" title="Export Raw Telemetry Dataset (CSV / Excel)">
+              <span>📊</span> <span>Export CSV</span>
+            </a>
 
             <!-- Switch to iOS Mobile Version Button -->
             <a href="index.html" class="tb-btn" style="text-decoration: none;" title="Open iOS Mobile View">

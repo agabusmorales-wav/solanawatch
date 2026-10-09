@@ -1,0 +1,22 @@
+{
+  "name": "SolanaWatch DSS",
+  "short_name": "SolanaWatch",
+  "description": "IoT Microclimatic Disease Early Warning & Decision Support System for Solanaceae Crops",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#34C759",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/figures/mobile_analytics_mockup.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/figures/mobile_analytics_mockup.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

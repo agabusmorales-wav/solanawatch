@@ -66,8 +66,72 @@ async function initTursoDatabase() {
       );
     `);
     console.log('[Turso] Table schema verified: sensor_readings_tbl');
+    await loadTursoRecords();
   } catch (err) {
     console.error('[Turso] Table init error:', err.message);
+  }
+}
+
+async function persistToTurso(record) {
+  if (!tursoClient) return;
+  try {
+    await tursoClient.execute({
+      sql: `INSERT OR REPLACE INTO sensor_readings_tbl (
+        reading_id, node_id, recorded_at, air_temperature, relative_humidity,
+        soil_temperature, soil_moisture, leaf_wetness_raw, leaf_wetness_hours,
+        battery_voltage, battery_percent, solar_voltage, wifi_rssi, disease_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        record.reading_id,
+        record.node_id,
+        record.recorded_at,
+        record.air_temperature,
+        record.relative_humidity,
+        record.soil_temperature,
+        record.soil_moisture,
+        record.leaf_wetness_raw,
+        record.leaf_wetness_hours,
+        record.battery_voltage,
+        record.battery_percent,
+        record.solar_voltage,
+        record.wifi_rssi,
+        JSON.stringify(record.disease_analysis)
+      ]
+    });
+  } catch (err) {
+    console.warn('[Turso] Insert warning:', err.message);
+  }
+}
+
+async function loadTursoRecords() {
+  if (!tursoClient) return;
+  try {
+    const res = await tursoClient.execute(`
+      SELECT * FROM sensor_readings_tbl 
+      ORDER BY recorded_at DESC LIMIT 300
+    `);
+    if (res.rows && res.rows.length > 0) {
+      const loaded = res.rows.reverse().map(r => ({
+        reading_id: r.reading_id,
+        node_id: r.node_id,
+        recorded_at: r.recorded_at,
+        air_temperature: Number(r.air_temperature),
+        relative_humidity: Number(r.relative_humidity),
+        soil_temperature: Number(r.soil_temperature),
+        soil_moisture: Number(r.soil_moisture),
+        leaf_wetness_raw: Number(r.leaf_wetness_raw),
+        leaf_wetness_hours: Number(r.leaf_wetness_hours),
+        battery_voltage: Number(r.battery_voltage),
+        battery_percent: Number(r.battery_percent),
+        solar_voltage: Number(r.solar_voltage),
+        wifi_rssi: Number(r.wifi_rssi),
+        disease_analysis: r.disease_json ? JSON.parse(r.disease_json) : null
+      }));
+      telemetryReadings = loaded;
+      console.log(`[Turso] Successfully loaded ${telemetryReadings.length} records from Cloud Database.`);
+    }
+  } catch (err) {
+    console.warn('[Turso] Could not fetch initial records:', err.message);
   }
 }
 
@@ -97,8 +161,11 @@ function loadDatabase() {
   }
 }
 
-function saveDatabase() {
+function saveDatabase(newRecord) {
   try {
+    if (newRecord) {
+      persistToTurso(newRecord);
+    }
     // Keep maximum 1000 latest records in local JSON store
     if (telemetryReadings.length > 1000) {
       telemetryReadings = telemetryReadings.slice(-1000);
@@ -355,6 +422,7 @@ app.post('/api/telemetry', (req, res) => {
     console.log(`[Ingestion] Received batch of ${payload.length} buffered readings from ESP32.`);
     const processed = payload.map(item => processTelemetry(item));
     telemetryReadings.push(...processed);
+    processed.forEach(p => persistToTurso(p));
     saveDatabase();
     return res.status(201).json({
       status: "success",
@@ -366,7 +434,7 @@ app.post('/api/telemetry', (req, res) => {
   // Handle single reading
   const record = processTelemetry(payload);
   telemetryReadings.push(record);
-  saveDatabase();
+  saveDatabase(record);
 
   console.log(`[Ingestion] Received reading from ${record.node_id} @ ${record.recorded_at} | Air: ${record.air_temperature}°C, ${record.relative_humidity}% | Soil: ${record.soil_moisture}% | LB: ${record.disease_analysis.late_blight.risk_level}`);
 
@@ -475,6 +543,60 @@ app.get('/api/health', (req, res) => {
       seconds_since_last_packet: lastSeenMs ? Math.round(lastSeenMs / 1000) : null
     }
   });
+});
+
+// 6. CSV Historical Telemetry Export (for Thesis Defense, SPSS, Excel)
+app.get('/api/telemetry/export-csv', (req, res) => {
+  if (telemetryReadings.length === 0) {
+    seedInitialData();
+  }
+
+  const headers = [
+    'Timestamp',
+    'Node_ID',
+    'Air_Temp_C',
+    'Air_RH_Pct',
+    'Soil_Temp_C',
+    'Soil_Moisture_Pct',
+    'Leaf_Wetness_Raw',
+    'Leaf_Wetness_Hours',
+    'Battery_V',
+    'Battery_Pct',
+    'Solar_V',
+    'WiFi_RSSI_dBm',
+    'Late_Blight_Risk',
+    'Late_Blight_SV',
+    'Bacterial_Wilt_Risk',
+    'Bacterial_Wilt_Score'
+  ];
+
+  const rows = telemetryReadings.map(r => {
+    const lb = r.disease_analysis?.late_blight || {};
+    const bw = r.disease_analysis?.bacterial_wilt || {};
+    return [
+      `"${r.recorded_at}"`,
+      `"${r.node_id}"`,
+      r.air_temperature,
+      r.relative_humidity,
+      r.soil_temperature,
+      r.soil_moisture,
+      r.leaf_wetness_raw,
+      r.leaf_wetness_hours,
+      r.battery_voltage,
+      r.battery_percent,
+      r.solar_voltage,
+      r.wifi_rssi,
+      `"${lb.risk_level || 'LOW'}"`,
+      lb.severity_value ?? 0,
+      `"${bw.risk_level || 'LOW'}"`,
+      bw.risk_score ?? 0.0
+    ].join(',');
+  });
+
+  const csvContent = [headers.join(','), ...rows].join('\r\n');
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', `attachment; filename="SolanaWatch_Telemetry_${Date.now()}.csv"`);
+  res.send(csvContent);
 });
 
 // Initialize database
